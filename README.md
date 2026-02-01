@@ -32,7 +32,13 @@ npm run dev
 ## Docker
 
 ```bash
+# Configurar variáveis de ambiente
+cd backend_minerva
+cp .env.example .env
+# Edite o .env e configure: SECRET_KEY, GEMINI_API_KEY e ative o PostgreSQL
+
 # Iniciar
+cd ..
 docker-compose up -d --build
 
 # Primeira execução
