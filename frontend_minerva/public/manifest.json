@@ -1,0 +1,41 @@
+{
+  "name": "Minerva - Sistema de Gestão de Contratos",
+  "short_name": "Minerva",
+  "description": "Sistema de Gestão de Contratos - EMAP",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "theme_color": "#1e40af",
+  "background_color": "#f8fafc",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "16x16 32x32",
+      "type": "image/x-icon"
+    }
+  ],
+  "categories": ["business", "utilities"],
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Home",
+      "description": "Acessar dashboard principal",
+      "url": "/dashboard"
+    },
+    {
+      "name": "Contratos",
+      "short_name": "Contratos",
+      "description": "Gerenciar contratos",
+      "url": "/contratos"
+    },
+    {
+      "name": "Colaboradores",
+      "short_name": "Equipe",
+      "description": "Gerenciar colaboradores",
+      "url": "/colaboradores"
+    }
+  ]
+}

@@ -1,0 +1,352 @@
+{% load i18n static jazzmin admin_urls %}
+{% get_current_language as LANGUAGE_CODE %}
+{% get_current_language_bidi as LANGUAGE_BIDI %}
+{% get_jazzmin_settings request as jazzmin_settings %}
+{% get_jazzmin_ui_tweaks as jazzmin_ui %}
+
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:"en-us" }}" {% if LANGUAGE_BIDI %}dir="rtl"{% endif %}>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+
+    <title>{% block title %}{{ title }} | {{ jazzmin_settings.site_title }}{% endblock %}</title>
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="{% static "vendor/fontawesome-free/css/all.min.css" %}">
+
+    <!-- Bootstrap and adminLTE -->
+    <link rel="stylesheet" href="{% static "vendor/adminlte/css/adminlte.min.css" %}">
+
+    <!-- Bootswatch theme -->
+    {% if jazzmin_ui.theme.name != 'default' %}
+        <link rel="stylesheet" href="{{ jazzmin_ui.theme.src }}" id="jazzmin-theme" />
+    {% endif %}
+
+    {% if jazzmin_ui.dark_mode_theme %}
+        <link rel="stylesheet" href="{{ jazzmin_ui.dark_mode_theme.src }}" id="jazzmin-dark-mode-theme" media="(prefers-color-scheme: dark)"/>
+    {% endif %}
+
+    <!-- Custom fixes for django -->
+    <link rel="stylesheet" href="{% static "jazzmin/css/main.css" %}">
+
+    {% if jazzmin_settings.custom_css %}
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="{% static jazzmin_settings.custom_css %}">
+    {% endif %}
+
+    <!-- Modern favicon -->
+    <link rel="shortcut icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='grad' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%231e40af'/><stop offset='100%' stop-color='%233b82f6'/></linearGradient></defs><circle cx='16' cy='16' r='15' fill='url(%23grad)'/><text x='16' y='22' font-family='system-ui' font-size='14' font-weight='bold' text-anchor='middle' fill='white'>⚓</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='grad' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%231e40af'/><stop offset='100%' stop-color='%233b82f6'/></linearGradient></defs><circle cx='16' cy='16' r='15' fill='url(%23grad)'/><text x='16' y='22' font-family='system-ui' font-size='14' font-weight='bold' text-anchor='middle' fill='white'>⚓</text></svg>" sizes="32x32" type="image/svg+xml">
+
+    {% if jazzmin_settings.use_google_fonts_cdn %}
+    <!-- Google Font: Source Sans Pro -->
+    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+    {% endif %}
+
+    <style>
+        /* Modern gradient background without white concentration */
+        body.jazzmin-login-page {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 25%, #60a5fa 50%, #93c5fd 75%, #dbeafe 100%) !important;
+            background-attachment: fixed !important;
+            min-height: 100vh !important;
+            position: relative !important;
+            overflow-x: hidden !important;
+        }
+
+        /* Animated background pattern */
+        body.jazzmin-login-page::before {
+            content: '' !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 200% !important;
+            height: 200% !important;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(30, 64, 175, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(147, 197, 253, 0.05) 0%, transparent 50%) !important;
+            animation: float-pattern 20s ease-in-out infinite !important;
+            z-index: -1 !important;
+        }
+
+        @keyframes float-pattern {
+            0%, 100% { transform: translateX(-50%) translateY(-50%) rotate(0deg); }
+            50% { transform: translateX(-50%) translateY(-50%) rotate(180deg); }
+        }
+
+        /* Modern glass-morphism container */
+        .login-box {
+            width: 420px !important;
+            margin: 8vh auto !important;
+            position: relative !important;
+        }
+
+        /* Modern logo with geometric icon */
+        .login-logo h1 {
+            text-align: center !important;
+            margin-bottom: 40px !important;
+            position: relative !important;
+        }
+
+        .login-logo h1::before {
+            content: "⚓" !important;
+            display: block !important;
+            font-size: 3.5rem !important;
+            color: #ffffff !important;
+            margin-bottom: 15px !important;
+            text-shadow: 0 4px 20px rgba(30, 64, 175, 0.4) !important;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3)) !important;
+            animation: icon-glow 3s ease-in-out infinite alternate !important;
+        }
+
+        @keyframes icon-glow {
+            from { 
+                text-shadow: 0 4px 20px rgba(30, 64, 175, 0.4);
+                filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+            }
+            to { 
+                text-shadow: 0 6px 30px rgba(30, 64, 175, 0.6);
+                filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.5));
+            }
+        }
+
+        .login-logo h1::after {
+            content: "Minerva Administrativo" !important;
+            display: block !important;
+            font-size: 1.9rem !important;
+            color: #ffffff !important;
+            font-weight: 700 !important;
+            text-shadow: 0 2px 15px rgba(0, 0, 0, 0.3) !important;
+            letter-spacing: 1px !important;
+        }
+
+        /* Hide default image */
+        .login-logo img {
+            display: none !important;
+        }
+
+        /* Glass-morphism card */
+        .card {
+            background: rgba(255, 255, 255, 0.15) !important;
+            backdrop-filter: blur(20px) !important;
+            border-radius: 24px !important;
+            box-shadow: 
+                0 25px 50px rgba(30, 64, 175, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            position: relative !important;
+            overflow: hidden !important;
+        }
+
+        .card::before {
+            content: '' !important;
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            height: 1px !important;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent) !important;
+        }
+
+        .card-body {
+            padding: 50px 40px !important;
+            position: relative !important;
+        }
+
+        /* Welcome message */
+        .login-box-msg {
+            text-align: center !important;
+            color: #1e40af !important;
+            font-size: 1.3rem !important;
+            font-weight: 600 !important;
+            margin-bottom: 35px !important;
+            text-shadow: 0 1px 3px rgba(255, 255, 255, 0.5) !important;
+        }
+
+        /* Modern input fields */
+        .form-control {
+            border: 2px solid rgba(255, 255, 255, 0.3) !important;
+            border-radius: 12px !important;
+            padding: 15px 20px !important;
+            font-size: 1rem !important;
+            background: rgba(255, 255, 255, 0.9) !important;
+            backdrop-filter: blur(10px) !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            box-shadow: 0 4px 10px rgba(30, 64, 175, 0.1) !important;
+        }
+
+        .form-control:focus {
+            border-color: #3b82f6 !important;
+            box-shadow: 
+                0 0 0 4px rgba(59, 130, 246, 0.1),
+                0 8px 25px rgba(30, 64, 175, 0.15) !important;
+            background: rgba(255, 255, 255, 0.95) !important;
+            transform: translateY(-1px) !important;
+        }
+
+        /* Modern input group styling */
+        .input-group-text {
+            background: rgba(255, 255, 255, 0.8) !important;
+            border: 2px solid rgba(255, 255, 255, 0.3) !important;
+            border-left: none !important;
+            border-radius: 0 12px 12px 0 !important;
+            color: #1e40af !important;
+            backdrop-filter: blur(10px) !important;
+        }
+
+        .input-group .form-control {
+            border-radius: 12px 0 0 12px !important;
+        }
+
+        .input-group .form-control:focus + .input-group-append .input-group-text {
+            border-color: #3b82f6 !important;
+            background: rgba(59, 130, 246, 0.1) !important;
+        }
+
+        /* Modern button with enhanced styling */
+        .btn-primary {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%) !important;
+            border: none !important;
+            border-radius: 12px !important;
+            padding: 16px 24px !important;
+            font-size: 1.1rem !important;
+            font-weight: 700 !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            box-shadow: 0 8px 25px rgba(30, 64, 175, 0.3) !important;
+            position: relative !important;
+            overflow: hidden !important;
+            text-transform: uppercase !important;
+            letter-spacing: 1px !important;
+        }
+
+        .btn-primary::before {
+            content: '' !important;
+            position: absolute !important;
+            top: 0 !important;
+            left: -100% !important;
+            width: 100% !important;
+            height: 100% !important;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent) !important;
+            transition: left 0.5s !important;
+        }
+
+        .btn-primary:hover::before {
+            left: 100% !important;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 50%, #93c5fd 100%) !important;
+            transform: translateY(-3px) !important;
+            box-shadow: 0 12px 35px rgba(30, 64, 175, 0.4) !important;
+        }
+
+        .btn-primary:active,
+        .btn-primary:focus {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%) !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 6px 20px rgba(30, 64, 175, 0.3) !important;
+        }
+
+        /* Error messages */
+        .callout-danger {
+            background: rgba(239, 68, 68, 0.1) !important;
+            border: 1px solid rgba(239, 68, 68, 0.3) !important;
+            border-radius: 12px !important;
+            color: #dc2626 !important;
+            backdrop-filter: blur(10px) !important;
+        }
+
+        /* Password reset link */
+        .password-reset-link a {
+            color: #1e40af !important;
+            font-size: 0.95rem !important;
+            text-decoration: none !important;
+            font-weight: 500 !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .password-reset-link a:hover {
+            color: #3b82f6 !important;
+            text-decoration: underline !important;
+            text-shadow: 0 1px 3px rgba(59, 130, 246, 0.3) !important;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .login-box {
+                width: 95% !important;
+                margin: 5vh auto !important;
+            }
+
+            .card-body {
+                padding: 35px 25px !important;
+            }
+
+            .login-logo h1::before {
+                font-size: 3rem !important;
+            }
+
+            .login-logo h1::after {
+                font-size: 1.6rem !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .login-box {
+                margin: 3vh auto !important;
+            }
+
+            .card-body {
+                padding: 25px 20px !important;
+            }
+
+            .login-logo h1::before {
+                font-size: 2.5rem !important;
+            }
+
+            .login-logo h1::after {
+                font-size: 1.4rem !important;
+            }
+
+            .form-control {
+                padding: 12px 16px !important;
+            }
+
+            .btn-primary {
+                padding: 14px 20px !important;
+            }
+        }
+    </style>
+
+    {% block extrastyle %} {% endblock %}
+    {% block extrahead %} {% endblock %}
+</head>
+<body class="hold-transition jazzmin-login-page">
+
+<div class="login-box">
+    <div class="login-logo">
+        <h1></h1>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            {% block content %} {% endblock %}
+        </div>
+    </div>
+</div>
+
+<!-- jQuery -->
+<script src="{% static "admin/js/vendor/jquery/jquery.js" %}"></script>
+<!-- Bootstrap 4 -->
+<script src="{% static 'vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+<!-- AdminLTE App -->
+<script src="{% static 'vendor/adminlte/js/adminlte.min.js' %}"></script>
+
+{% if jazzmin_settings.custom_js %}
+    <script src="{% static jazzmin_settings.custom_js %}"></script>
+{% endif %}
+
+</body>
+</html>

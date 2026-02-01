@@ -1,0 +1,503 @@
+{% extends 'center/base.html' %}
+
+{% block title %}Centro Solicitante - Minerva{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-3xl font-bold text-gray-900 flex items-center">
+                    <span class="mr-3 text-ocean-600">🏛️</span>
+                    <span id="form-title">Novo Centro Solicitante</span>
+                </h2>
+                <p class="mt-2 text-gray-600">Gerencie centros solicitantes vinculados aos centros gestores</p>
+            </div>
+            <a href="{% url 'cost_center:requesting-center-list' %}" 
+               class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Voltar
+            </a>
+        </div>
+    </div>
+
+    <!-- Form Card -->
+    <div class="bg-white shadow-sm rounded-lg border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-medium text-gray-900">Informações do Centro Solicitante</h3>
+        </div>
+        
+        <form id="requesting-center-form" class="p-6 space-y-6" x-data="requestingCenterForm()">
+            {% csrf_token %}
+            
+            <!-- Management Center Field -->
+            <div class="form-group">
+                <label for="management_center_id" class="block text-sm font-semibold text-gray-700 mb-2">
+                    Centro Gestor <span class="text-red-500">*</span>
+                </label>
+                <div class="relative">
+                    <select 
+                        id="management_center_id" 
+                        name="management_center_id" 
+                        x-model="formData.management_center_id"
+                        @change="clearFieldError('management_center_id')"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ocean-500 focus:border-ocean-500 transition-colors"
+                        :class="{ 'border-red-500 ring-1 ring-red-500': errors.management_center_id }"
+                        required>
+                        <option value="">Selecione o centro gestor</option>
+                        <template x-for="center in managementCenters" :key="center.id">
+                            <option :value="center.id" x-text="center.name"></option>
+                        </template>
+                    </select>
+                    
+                    <!-- Loading indicator -->
+                    <div x-show="loadingManagementCenters" class="absolute right-3 top-3">
+                        <svg class="animate-spin h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </div>
+                </div>
+                
+                <!-- Field Error Display -->
+                <div x-show="errors.management_center_id" x-transition class="mt-2 p-3 bg-red-50 border border-red-200 rounded-md">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-red-800" x-text="errors.management_center_id"></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Field Help Text -->
+                <div class="mt-2 text-sm text-gray-500" x-show="!errors.management_center_id">
+                    <div class="flex items-start space-x-2">
+                        <svg class="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <p>Selecione o centro gestor ao qual este centro solicitante estará vinculado.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nome Field -->
+            <div class="form-group">
+                <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">
+                    Nome do Centro Solicitante <span class="text-red-500">*</span>
+                </label>
+                <div class="relative">
+                    <input 
+                        type="text" 
+                        id="name" 
+                        name="name" 
+                        x-model="formData.name"
+                        @input="clearFieldError('name')"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ocean-500 focus:border-ocean-500 transition-colors placeholder-gray-400"
+                        :class="{ 'border-red-500 ring-1 ring-red-500': errors.name }"
+                        placeholder="Digite o nome do centro solicitante"
+                        required>
+                    
+                    <!-- Character Counter -->
+                    <div class="absolute right-3 top-3 text-xs text-gray-400" x-show="formData.name.length > 0">
+                        <span x-text="formData.name.length"></span>/100
+                    </div>
+                </div>
+                
+                <!-- Field Error Display -->
+                <div x-show="errors.name" x-transition class="mt-2 p-3 bg-red-50 border border-red-200 rounded-md">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-red-800" x-text="errors.name"></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Duplicate Warning -->
+                <div x-show="duplicateWarning" x-transition class="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-yellow-800">
+                                Atenção: Um centro solicitante com este nome já existe para o centro gestor selecionado.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Field Help Text -->
+                <div class="mt-2 text-sm text-gray-500" x-show="!errors.name && !duplicateWarning">
+                    <div class="flex items-start space-x-2">
+                        <svg class="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div>
+                            <p>Nome deve ter pelo menos 3 caracteres.</p>
+                            <p class="mt-1">Máximo 100 caracteres. Deve ser único para o centro gestor selecionado.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Descrição Field -->
+            <div class="form-group">
+                <label for="description" class="block text-sm font-semibold text-gray-700 mb-2">
+                    Descrição
+                </label>
+                <div class="relative">
+                    <textarea 
+                        id="description" 
+                        name="description" 
+                        x-model="formData.description"
+                        @input="clearFieldError('description')"
+                        rows="4"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ocean-500 focus:border-ocean-500 transition-colors placeholder-gray-400 resize-none"
+                        :class="{ 'border-red-500 ring-1 ring-red-500': errors.description }"
+                        placeholder="Descrição opcional do centro solicitante"></textarea>
+                    
+                    <!-- Character Counter -->
+                    <div class="absolute right-3 bottom-3 text-xs text-gray-400" x-show="formData.description.length > 0">
+                        <span x-text="formData.description.length"></span>/500
+                    </div>
+                </div>
+                
+                <!-- Field Error Display -->
+                <div x-show="errors.description" x-transition class="mt-2 p-3 bg-red-50 border border-red-200 rounded-md">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-red-800" x-text="errors.description"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- General Form Errors -->
+            <div x-show="errors.non_field_errors || errors.__all__" x-transition class="p-4 bg-red-50 border border-red-200 rounded-md">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-red-800">Erro no formulário</h3>
+                        <div class="mt-2 text-sm text-red-700">
+                            <p x-text="errors.non_field_errors || errors.__all__"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
+                <button 
+                    type="button" 
+                    @click="resetForm()"
+                    class="px-6 py-3 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ocean-500 transition-colors">
+                    Limpar
+                </button>
+                
+                <button 
+                    type="submit" 
+                    @click.prevent="submitForm()"
+                    :disabled="isSubmitting"
+                    class="px-6 py-3 border border-transparent rounded-lg text-sm font-medium text-white bg-ocean-600 hover:bg-ocean-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ocean-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    :class="{ 'opacity-50 cursor-not-allowed': isSubmitting }">
+                    
+                    <span x-show="!isSubmitting">
+                        <span x-text="editMode ? 'Atualizar Centro Solicitante' : 'Criar Centro Solicitante'"></span>
+                    </span>
+                    
+                    <span x-show="isSubmitting" class="flex items-center">
+                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span x-text="editMode ? 'Atualizando...' : 'Criando...'"></span>
+                    </span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function requestingCenterForm() {
+    return {
+        // Form state
+        editMode: false,
+        centerId: null,
+        isSubmitting: false,
+        loadingManagementCenters: false,
+        duplicateWarning: false,
+        
+        // Form data
+        formData: {
+            name: '',
+            description: '',
+            management_center_id: ''
+        },
+        
+        // Related data
+        managementCenters: [],
+        
+        // Validation errors
+        errors: {},
+        
+        // Initialize form
+        async init() {
+            await this.loadManagementCenters();
+            
+            // Check if editing
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id') || document.querySelector('#center-id')?.value;
+            
+            if (id) {
+                this.centerId = id;
+                this.editMode = true;
+                await this.loadCenter(id);
+                document.getElementById('form-title').textContent = 'Editar Centro Solicitante';
+            }
+        },
+        
+        // Load management centers for dropdown
+        async loadManagementCenters() {
+            this.loadingManagementCenters = true;
+            try {
+                const response = await makeAPIRequest('/center/management-centers/');
+                if (response.ok) {
+                    this.managementCenters = response.data.results || response.data || [];
+                } else {
+                    showToast('Erro ao carregar centros gestores', 'error');
+                }
+            } catch (error) {
+                console.error('Error loading management centers:', error);
+                showToast('Erro ao carregar centros gestores', 'error');
+            } finally {
+                this.loadingManagementCenters = false;
+            }
+        },
+        
+        // Load existing center data
+        async loadCenter(id) {
+            try {
+                const response = await makeAPIRequest(`/center/requesting-centers/${id}/`);
+                if (response.ok) {
+                    this.formData = {
+                        name: response.data.name || '',
+                        description: response.data.description || '',
+                        management_center_id: response.data.management_center?.id || ''
+                    };
+                } else {
+                    showToast('Erro ao carregar dados do centro solicitante', 'error');
+                }
+            } catch (error) {
+                console.error('Error loading center:', error);
+                showToast('Erro ao carregar dados', 'error');
+            }
+        },
+        
+        // Check for duplicate names (throttled)
+        checkDuplicate: null,
+        
+        // Clear specific field error
+        clearFieldError(fieldName) {
+            if (this.errors[fieldName]) {
+                delete this.errors[fieldName];
+            }
+            
+            if (fieldName === 'name') {
+                this.duplicateWarning = false;
+                
+                // Throttle duplicate checking
+                if (this.checkDuplicate) {
+                    clearTimeout(this.checkDuplicate);
+                }
+                
+                this.checkDuplicate = setTimeout(() => {
+                    this.validateDuplicateName();
+                }, 500);
+            }
+        },
+        
+        // Validate duplicate name
+        async validateDuplicateName() {
+            if (!this.formData.name || !this.formData.management_center_id || this.formData.name.length < 3) {
+                this.duplicateWarning = false;
+                return;
+            }
+            
+            try {
+                const response = await makeAPIRequest('/center/requesting-centers/');
+                if (response.ok) {
+                    const centers = response.data.results || response.data || [];
+                    const duplicate = centers.find(center => 
+                        center.name.toLowerCase() === this.formData.name.toLowerCase() &&
+                        center.management_center.id == this.formData.management_center_id &&
+                        (!this.editMode || center.id != this.centerId)
+                    );
+                    
+                    this.duplicateWarning = !!duplicate;
+                }
+            } catch (error) {
+                console.error('Error checking duplicate:', error);
+            }
+        },
+        
+        // Reset form
+        resetForm() {
+            this.formData = {
+                name: '',
+                description: '',
+                management_center_id: ''
+            };
+            this.errors = {};
+            this.duplicateWarning = false;
+        },
+        
+        // Client-side validation
+        validateForm() {
+            this.errors = {};
+            let isValid = true;
+            
+            // Management center validation
+            if (!this.formData.management_center_id) {
+                this.errors.management_center_id = 'Centro gestor é obrigatório';
+                isValid = false;
+            }
+            
+            // Name validation
+            if (!this.formData.name || this.formData.name.trim().length === 0) {
+                this.errors.name = 'Nome é obrigatório';
+                isValid = false;
+            } else if (this.formData.name.trim().length < 3) {
+                this.errors.name = 'Nome deve ter pelo menos 3 caracteres';
+                isValid = false;
+            } else if (this.formData.name.length > 100) {
+                this.errors.name = 'Nome deve ter no máximo 100 caracteres';
+                isValid = false;
+            }
+            
+            // Description validation (optional)
+            if (this.formData.description && this.formData.description.length > 500) {
+                this.errors.description = 'Descrição deve ter no máximo 500 caracteres';
+                isValid = false;
+            }
+            
+            return isValid;
+        },
+        
+        // Handle server validation errors
+        handleServerErrors(serverErrors) {
+            this.errors = {};
+            
+            // Handle different error formats from Django REST Framework
+            if (typeof serverErrors === 'object') {
+                Object.keys(serverErrors).forEach(key => {
+                    const errorValue = serverErrors[key];
+                    
+                    if (Array.isArray(errorValue)) {
+                        this.errors[key] = errorValue[0]; // Take first error message
+                    } else if (typeof errorValue === 'string') {
+                        this.errors[key] = errorValue;
+                    } else {
+                        this.errors[key] = 'Erro de validação';
+                    }
+                });
+            } else if (typeof serverErrors === 'string') {
+                this.errors.non_field_errors = serverErrors;
+            }
+            
+            // Handle unique constraint errors specifically
+            if (serverErrors.non_field_errors && 
+                Array.isArray(serverErrors.non_field_errors) &&
+                serverErrors.non_field_errors[0]?.includes('unique')) {
+                this.errors.name = 'Um centro solicitante com este nome já existe para este centro gestor';
+                delete this.errors.non_field_errors;
+            }
+            
+            // Scroll to first error
+            setTimeout(() => {
+                const firstError = document.querySelector('[x-show="errors.' + Object.keys(this.errors)[0] + '"]');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 100);
+        },
+        
+        // Submit form
+        async submitForm() {
+            if (this.isSubmitting) return;
+            
+            // Client-side validation
+            if (!this.validateForm()) {
+                return;
+            }
+            
+            this.isSubmitting = true;
+            
+            try {
+                const url = this.editMode 
+                    ? `/center/requesting-centers/${this.centerId}/update/`
+                    : '/center/requesting-centers/create/';
+                
+                const method = this.editMode ? 'PUT' : 'POST';
+                
+                const response = await makeAPIRequest(url, method, this.formData);
+                
+                if (response.ok) {
+                    const message = this.editMode 
+                        ? 'Centro solicitante atualizado com sucesso!' 
+                        : 'Centro solicitante criado com sucesso!';
+                    
+                    showToast(message, 'success');
+                    
+                    // Redirect after success
+                    setTimeout(() => {
+                        window.location.href = '{% url "cost_center:requesting-center-list" %}';
+                    }, 1500);
+                    
+                } else {
+                    // Handle validation errors
+                    if (response.status === 400) {
+                        this.handleServerErrors(response.data);
+                        showToast('Por favor, corrija os erros no formulário', 'error');
+                    } else {
+                        showToast('Erro interno do servidor', 'error');
+                        console.error('Server error:', response.data);
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Request error:', error);
+                showToast('Erro de conexão. Tente novamente.', 'error');
+            } finally {
+                this.isSubmitting = false;
+            }
+        }
+    }
+}
+</script>
+{% endblock %}

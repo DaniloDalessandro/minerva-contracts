@@ -1,0 +1,178 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block extrahead %}
+    {{ block.super }}
+    
+    <!-- Favicon personalizado com âncora -->
+    <link rel="icon" type="image/svg+xml" href="{% static 'img/favicon.svg' %}">
+    <link rel="shortcut icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="{% static 'img/favicon.svg' %}">
+    <style>
+        /* Customização do cabeçalho */
+        .navbar-brand .brand-text {
+            font-weight: 600 !important;
+            font-size: 1.2rem !important;
+        }
+        
+        /* Remove qualquer ícone padrão do Jazzmin */
+        .navbar-brand .brand-image {
+            max-height: 28px !important;
+            width: auto !important;
+            margin-right: 8px !important;
+        }
+        
+        /* Remove ícone ::before se existir */
+        .navbar-brand::before {
+            content: none !important;
+            display: none !important;
+        }
+        
+        /* Garante que apenas a logo SVG apareça */
+        .navbar-brand img {
+            max-height: 28px !important;
+            width: auto !important;
+            margin-right: 8px !important;
+        }
+        
+        /* Melhorias na sidebar */
+        .main-sidebar {
+            background: linear-gradient(180deg, #1e3a8a 0%, #3b82f6 100%) !important;
+        }
+        
+        /* Estilização dos itens do menu lateral */
+        .nav-sidebar .nav-item .nav-link {
+            border-radius: 6px !important;
+            margin: 2px 8px !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .nav-sidebar .nav-item .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1) !important;
+            transform: translateX(4px) !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        .nav-sidebar .nav-item .nav-link.active {
+            background: rgba(255, 255, 255, 0.2) !important;
+            border-left: 3px solid #ffffff !important;
+            font-weight: 600 !important;
+        }
+        
+        /* Ícones dos itens do menu - efeitos visuais */
+        .nav-sidebar .nav-item .nav-link i {
+            width: 20px !important;
+            text-align: center !important;
+            margin-right: 10px !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .nav-sidebar .nav-item .nav-link:hover i {
+            transform: scale(1.1) !important;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+        }
+        
+        /* Cabeçalhos de seção no menu */
+        .nav-header {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border-radius: 4px !important;
+            margin: 8px !important;
+            padding: 8px 16px !important;
+            font-size: 0.8rem !important;
+            font-weight: 600 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+        }
+        
+        /* Dashboard cards */
+        .card {
+            border-radius: 10px !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08) !important;
+            border: none !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12) !important;
+        }
+        
+        /* Título da página */
+        .content-header h1 {
+            color: #1e3a8a !important;
+            font-weight: 600 !important;
+        }
+        
+        /* Breadcrumbs */
+        .breadcrumb {
+            background: transparent !important;
+            padding: 0 !important;
+            margin-bottom: 10px !important;
+        }
+        
+        .breadcrumb-item a {
+            color: #3b82f6 !important;
+            text-decoration: none !important;
+        }
+        
+        .breadcrumb-item a:hover {
+            color: #1e3a8a !important;
+            text-decoration: underline !important;
+        }
+        
+        /* Botões de ação */
+        .btn-primary {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%) !important;
+            border: none !important;
+            border-radius: 6px !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #3b82f6 0%, #1e3a8a 100%) !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3) !important;
+        }
+        
+        /* Tabelas */
+        .table {
+            border-radius: 8px !important;
+            overflow: hidden !important;
+        }
+        
+        .table th {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%) !important;
+            border-bottom: 2px solid #3b82f6 !important;
+            font-weight: 600 !important;
+            color: #1e3a8a !important;
+        }
+        
+        .table tbody tr:hover {
+            background: rgba(59, 130, 246, 0.05) !important;
+        }
+        
+        /* Footer */
+        .main-footer {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%) !important;
+            color: #ffffff !important;
+            border-top: 3px solid rgba(255, 255, 255, 0.2) !important;
+        }
+        
+        /* Animações suaves */
+        * {
+            transition: color 0.3s ease, background-color 0.3s ease !important;
+        }
+        
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .navbar-brand::before {
+                font-size: 1.2rem !important;
+                margin-right: 4px !important;
+            }
+            
+            .nav-sidebar .nav-item .nav-link:hover {
+                transform: none !important;
+            }
+        }
+    </style>
+{% endblock %}

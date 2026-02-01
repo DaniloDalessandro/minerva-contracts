@@ -1,0 +1,59 @@
+{% extends "admin/login.html" %}
+{% load static %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <style>
+        /* Ensure compatibility with the main login template */
+        .login-page {
+            background: transparent !important;
+        }
+        
+        /* Modern input icons */
+        .input-group-text .fas.fa-user::before {
+            content: "\f007" !important; /* Modern user icon */
+        }
+        
+        .input-group-text .fas.fa-lock::before {
+            content: "\f023" !important; /* Modern lock icon */
+        }
+
+        /* Enhanced focus states for better accessibility */
+        .form-control:focus {
+            outline: 2px solid #3b82f6 !important;
+            outline-offset: 2px !important;
+        }
+
+        /* Improved button focus state */
+        .btn-primary:focus {
+            outline: 2px solid #93c5fd !important;
+            outline-offset: 2px !important;
+        }
+
+        /* Accessibility improvements */
+        .login-box-msg {
+            font-size: 1.3rem !important;
+            line-height: 1.5 !important;
+        }
+
+        /* Enhanced error states */
+        .callout-danger {
+            border-left: 4px solid #ef4444 !important;
+            animation: shake 0.5s ease-in-out !important;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+    </style>
+{% endblock %}
+
+{% block footer %}
+    <div class="login-page-footer" style="text-align: center; margin-top: 30px; color: rgba(255, 255, 255, 0.9); font-size: 0.95rem;">
+        <p><strong>⚓ Minerva © 2024</strong></p>
+        <p>Sistema de Gestão Administrativo</p>
+        <p>Navegando com eficiência e modernidade</p>
+    </div>
+{% endblock %}

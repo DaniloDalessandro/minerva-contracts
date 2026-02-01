@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Filtros</title>
+</head>
+<body>
+    <h1>Debug - Testando filtros</h1>
+    <button onclick="testCentros()">Testar Centros Gestores</button>
+    <button onclick="testColaboradores()">Testar Colaboradores</button>
+    <pre id="result"></pre>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+
+        async function testCentros() {
+            const result = document.getElementById('result');
+            result.textContent = 'Testando...';
+
+            try {
+                // Teste 1: Sem filtro
+                const url1 = `${API_BASE}/api/v1/center/management-centers/?page=1&page_size=10`;
+                console.log('URL sem filtro:', url1);
+                const res1 = await fetch(url1);
+                const data1 = await res1.json();
+
+                // Teste 2: Com is_active=true
+                const url2 = `${API_BASE}/api/v1/center/management-centers/?page=1&page_size=10&is_active=true`;
+                console.log('URL com is_active=true:', url2);
+                const res2 = await fetch(url2);
+                const data2 = await res2.json();
+
+                result.textContent = `Sem filtro: ${data1.count} registros\n` +
+                                    `Com is_active=true: ${data2.count} registros\n\n` +
+                                    `Dados sem filtro:\n${JSON.stringify(data1, null, 2)}`;
+            } catch (error) {
+                result.textContent = 'Erro: ' + error.message;
+            }
+        }
+
+        async function testColaboradores() {
+            const result = document.getElementById('result');
+            result.textContent = 'Testando...';
+
+            try {
+                // Teste 1: Sem filtro
+                const url1 = `${API_BASE}/api/v1/employee/?page=1&page_size=10`;
+                const res1 = await fetch(url1);
+                const data1 = await res1.json();
+
+                // Teste 2: Com status=ATIVO
+                const url2 = `${API_BASE}/api/v1/employee/?page=1&page_size=10&status=ATIVO`;
+                const res2 = await fetch(url2);
+                const data2 = await res2.json();
+
+                result.textContent = `Sem filtro: ${data1.count} registros\n` +
+                                    `Com status=ATIVO: ${data2.count} registros\n\n` +
+                                    `Dados sem filtro:\n${JSON.stringify(data1, null, 2)}`;
+            } catch (error) {
+                result.textContent = 'Erro: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

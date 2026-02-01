@@ -1,0 +1,113 @@
+# Docker Commands Reference for Minerva Project
+
+## Development Environment (docker-compose.dev.yml)
+
+# Start development environment
+docker-compose -f docker-compose.dev.yml up
+
+# Start in detached mode (background)
+docker-compose -f docker-compose.dev.yml up -d
+
+# Rebuild and start (after code changes)
+docker-compose -f docker-compose.dev.yml up --build
+
+# Stop development environment
+docker-compose -f docker-compose.dev.yml down
+
+# Stop and remove volumes (clean state)
+docker-compose -f docker-compose.dev.yml down -v
+
+# View logs
+docker-compose -f docker-compose.dev.yml logs -f
+
+# View logs for specific service
+docker-compose -f docker-compose.dev.yml logs -f backend
+docker-compose -f docker-compose.dev.yml logs -f frontend
+docker-compose -f docker-compose.dev.yml logs -f db
+
+# Execute command in running container
+docker-compose -f docker-compose.dev.yml exec backend python manage.py migrate
+docker-compose -f docker-compose.dev.yml exec backend python manage.py createsuperuser
+docker-compose -f docker-compose.dev.yml exec backend python manage.py shell
+
+# Access PostgreSQL
+docker-compose -f docker-compose.dev.yml exec db psql -U minerva_user -d minerva_db
+
+## Production Environment (docker-compose.yml)
+
+# Start production environment
+docker-compose up
+
+# Start in detached mode
+docker-compose up -d
+
+# Rebuild and start
+docker-compose up --build
+
+# Stop production environment
+docker-compose down
+
+# View logs
+docker-compose logs -f
+
+## Maintenance Commands
+
+# Remove all stopped containers
+docker container prune
+
+# Remove unused images
+docker image prune
+
+# Remove unused volumes
+docker volume prune
+
+# Remove everything (CAUTION: This will delete all Docker data)
+docker system prune -a --volumes
+
+# Check health status
+docker-compose ps
+docker-compose -f docker-compose.dev.yml ps
+
+# Restart specific service
+docker-compose restart backend
+docker-compose -f docker-compose.dev.yml restart backend
+
+## Database Management
+
+# Create database backup
+docker-compose exec db pg_dump -U minerva_user minerva_db > backup.sql
+docker-compose -f docker-compose.dev.yml exec db pg_dump -U minerva_user minerva_db > backup_dev.sql
+
+# Restore database from backup
+docker-compose exec -T db psql -U minerva_user -d minerva_db < backup.sql
+
+# Access database shell
+docker-compose exec db psql -U minerva_user -d minerva_db
+
+# Run Django migrations
+docker-compose exec backend python manage.py migrate
+docker-compose -f docker-compose.dev.yml exec backend python manage.py migrate
+
+# Create Django superuser
+docker-compose exec backend python manage.py createsuperuser
+
+## Troubleshooting
+
+# Check service health
+docker inspect --format='{{json .State.Health}}' <container_id>
+
+# View resource usage
+docker stats
+
+# Check network connectivity
+docker-compose exec frontend wget -O- http://backend:8000/admin/login/
+docker-compose exec backend curl http://localhost:8000/admin/login/
+
+# Rebuild from scratch (clean build)
+docker-compose down -v
+docker-compose build --no-cache
+docker-compose up
+
+# Check environment variables
+docker-compose exec backend env | grep DATABASE
+docker-compose exec frontend env | grep NEXT_PUBLIC
