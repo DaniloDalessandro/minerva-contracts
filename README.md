@@ -1,11 +1,11 @@
 # Sistema Minerva
 
-Sistema de gestao de orcamentos, contratos e colaboradores com Next.js e Django REST Framework.
+Sistema de gestão de orçamentos, contratos e colaboradores com Next.js e Django REST Framework.
 
 ## Stack
 
 - **Frontend:** Next.js 15, React 19, TypeScript, Tailwind CSS, Shadcn/ui
-- **Backend:** Django 5.2, DRF, PostgreSQL 16 + pgvector, LangChain + Gemini AI.
+- **Backend:** Django 5.2, DRF, PostgreSQL 16 + pgvector, LangChain + Gemini AI
 
 ## Quick Start
 
@@ -15,7 +15,7 @@ Sistema de gestao de orcamentos, contratos e colaboradores com Next.js e Django 
 cd backend_minerva
 python -m venv venv && venv\Scripts\activate
 pip install -r requirements.txt
-cp .env.example .env  # Configure suas variaveis
+cp .env.example .env  # Configure suas variáveis
 python manage.py migrate
 python manage.py createsuperuser
 python manage.py runserver
@@ -35,7 +35,7 @@ npm run dev
 # Iniciar
 docker-compose up -d --build
 
-# Primeira execucao
+# Primeira execução
 docker-compose exec backend python manage.py migrate
 docker-compose exec backend python manage.py createsuperuser
 
@@ -52,9 +52,18 @@ docker-compose down
 - Swagger: http://localhost:8000/api/schema/swagger-ui/
 - Admin: http://localhost:8000/admin/
 
-## Variaveis de Ambiente
+## Variáveis de Ambiente
 
 ### Backend (.env)
+
+Copie o arquivo de exemplo e configure suas variáveis:
+
+```bash
+cd backend_minerva
+cp .env.example .env
+```
+
+Principais variáveis:
 
 ```env
 DEBUG=True
@@ -62,6 +71,14 @@ SECRET_KEY=sua-chave-secreta
 ALLOWED_HOSTS=localhost,127.0.0.1
 CORS_ALLOWED_ORIGINS=http://localhost:3000
 GEMINI_API_KEY=sua-chave-gemini
+
+# Para Docker, use PostgreSQL:
+DATABASE_ENGINE=django.db.backends.postgresql
+DATABASE_NAME=minerva_db
+DATABASE_USER=minerva_user
+DATABASE_PASSWORD=minerva_password
+DATABASE_HOST=db
+DATABASE_PORT=5432
 ```
 
 ### Frontend (.env.local)
@@ -70,7 +87,7 @@ GEMINI_API_KEY=sua-chave-gemini
 NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
-## Comandos Uteis
+## Comandos Úteis
 
 ```bash
 # Backend
@@ -83,4 +100,4 @@ npm run build && npm run start
 
 ---
 
-**Versao:** 2.2 | **Atualizado:** Janeiro 2026
+**Versão:** 2.2 | **Atualizado:** Fevereiro 2026
