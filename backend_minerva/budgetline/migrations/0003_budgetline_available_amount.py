@@ -1,0 +1,19 @@
+
+
+import django.core.validators
+from django.db import migrations, models
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ('budgetline', '0002_add_status_field'),
+    ]
+
+    operations = [
+        migrations.AddField(
+            model_name='budgetline',
+            name='available_amount',
+            field=models.DecimalField(decimal_places=2, default=0, help_text='Valor disponível para criação de contratos', max_digits=10, validators=[django.core.validators.MinValueValidator(0)], verbose_name='Valor Disponível'),
+        ),
+    ]

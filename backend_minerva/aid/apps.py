@@ -1,0 +1,10 @@
+from django.apps import AppConfig
+
+
+class AidConfig(AppConfig):
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'aid'
+    verbose_name = 'Auxílios'
+
+    def ready(self):
+        import aid.signals

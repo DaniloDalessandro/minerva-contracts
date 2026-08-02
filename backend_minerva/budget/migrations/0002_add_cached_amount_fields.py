@@ -1,0 +1,44 @@
+
+
+from decimal import Decimal
+from django.db import migrations, models
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ("budget", "0001_initial"),
+    ]
+
+    operations = [
+        migrations.AddField(
+            model_name="budget",
+            name="cached_incoming_movements",
+            field=models.DecimalField(
+                decimal_places=2,
+                default=Decimal("0.00"),
+                max_digits=10,
+                verbose_name="Entrada via Movimentações (Cache)",
+            ),
+        ),
+        migrations.AddField(
+            model_name="budget",
+            name="cached_outgoing_movements",
+            field=models.DecimalField(
+                decimal_places=2,
+                default=Decimal("0.00"),
+                max_digits=10,
+                verbose_name="Saída via Movimentações (Cache)",
+            ),
+        ),
+        migrations.AddField(
+            model_name="budget",
+            name="cached_used_amount",
+            field=models.DecimalField(
+                decimal_places=2,
+                default=Decimal("0.00"),
+                max_digits=10,
+                verbose_name="Valor Utilizado (Cache)",
+            ),
+        ),
+    ]
