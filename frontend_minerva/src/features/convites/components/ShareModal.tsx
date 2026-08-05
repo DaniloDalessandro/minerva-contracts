@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog"
@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Share2, Users, Mail, Hash, Search, ChevronRight, X, Plus, CheckCircle2, AlertCircle } from "lucide-react"
+import { Loader2, Share2, Users, Mail, Hash, Search, ChevronRight, X, Plus, CheckCircle2, Wallet, Landmark, FileText } from "lucide-react"
 import { SharingService } from "@/services"
 import { toast } from "@/hooks/use-toast"
 import type { ResourceType, PermissionType, UserSuggestion, ResourceResult } from "@/lib/api/sharing"
@@ -34,6 +34,12 @@ const RESOURCE_LABELS: Record<ResourceType, string> = {
   CONTRACT: 'Contrato',
 }
 
+const RESOURCE_TYPE_OPTIONS: { value: ResourceType; label: string; icon: React.ElementType }[] = [
+  { value: 'BUDGET', label: 'Orçamento', icon: Wallet },
+  { value: 'BUDGET_LINE', label: 'Linha Orçamentária', icon: Landmark },
+  { value: 'CONTRACT', label: 'Contrato', icon: FileText },
+]
+
 type RecipientMode = 'email' | 'matricula'
 
 interface Recipient {
@@ -46,13 +52,16 @@ interface Recipient {
 interface ShareModalProps {
   open: boolean
   onClose: () => void
-  resourceType: ResourceType
+  resourceType?: ResourceType
   resourceId?: number
   resourceName?: string
   onSuccess?: () => void
 }
 
 export function ShareModal({ open, onClose, resourceType, resourceId, resourceName, onSuccess }: ShareModalProps) {
+  // Tipo de recurso selecionado (permite trocar no modal)
+  const [selectedType, setSelectedType] = useState<ResourceType>(resourceType ?? 'BUDGET')
+
   // Recurso
   const [selectedResource, setSelectedResource] = useState<ResourceResult | null>(
     resourceId && resourceName ? { id: resourceId, name: resourceName } : null
@@ -78,12 +87,13 @@ export function ShareModal({ open, onClose, resourceType, resourceId, resourceNa
   const [message, setMessage] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-  const permOptions = PERMISSION_OPTIONS[resourceType]
+  const permOptions = PERMISSION_OPTIONS[selectedType]
   const hasResourceFromProps = !!(resourceId && resourceName)
   const canSubmit = !!selectedResource && recipients.length > 0 && !submitting
 
   useEffect(() => {
     if (open) {
+      setSelectedType(resourceType ?? 'BUDGET')
       setSelectedResource(hasResourceFromProps ? { id: resourceId!, name: resourceName! } : null)
       setResourceQuery('')
       setResourceResults([])
@@ -96,6 +106,15 @@ export function ShareModal({ open, onClose, resourceType, resourceId, resourceNa
     }
   }, [open])
 
+  const handleTypeChange = (type: ResourceType) => {
+    setSelectedType(type)
+    setSelectedResource(null)
+    setResourceQuery('')
+    setResourceResults([])
+    setShowResourceResults(false)
+    setPermission('VIEW')
+  }
+
   // ── Recurso ────────────────────────────────────────────────
   const handleResourceQueryChange = (value: string) => {
     setResourceQuery(value)
@@ -105,7 +124,7 @@ export function ShareModal({ open, onClose, resourceType, resourceId, resourceNa
       setSearchingResource(true)
       resourceTimeout.current = setTimeout(async () => {
         try {
-          const results = await SharingService.searchResources(resourceType, value)
+          const results = await SharingService.searchResources(selectedType, value)
           setResourceResults(results)
           setShowResourceResults(results.length > 0)
         } finally {
@@ -194,7 +213,7 @@ export function ShareModal({ open, onClose, resourceType, resourceId, resourceNa
     const results = await Promise.allSettled(
       recipients.map((r) =>
         SharingService.createShare({
-          resource_type: resourceType,
+          resource_type: selectedType,
           resource_id: selectedResource!.id,
           invited_email: r.email,
           permission_type: permission,
@@ -243,18 +262,51 @@ export function ShareModal({ open, onClose, resourceType, resourceId, resourceNa
           <DialogHeader className="shrink-0 px-6 pt-5 pb-3 border-b border-border/60">
             <DialogTitle className="flex items-center gap-2 text-[16px] font-semibold text-primary">
               <Share2 className="h-4 w-4" />
-              Enviar Convite — {RESOURCE_LABELS[resourceType]}
+              Enviar Convite — {RESOURCE_LABELS[selectedType]}
             </DialogTitle>
           </DialogHeader>
 
           <div className="min-h-0 flex-1 overflow-y-auto px-6 py-4 space-y-5">
+
+            {/* Seletor de tipo de recurso */}
+            {!hasResourceFromProps && (
+              <div className="space-y-2">
+                <p className="text-[13px] font-semibold text-foreground border-b border-primary/25 pb-1.5 flex items-center gap-2">
+                  <span className="w-1 h-[16px] rounded-full bg-primary/70 inline-block" />
+                  Tipo de Recurso
+                  <span className="ml-px text-destructive">*</span>
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {RESOURCE_TYPE_OPTIONS.map((opt) => {
+                    const Icon = opt.icon
+                    const active = selectedType === opt.value
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => handleTypeChange(opt.value)}
+                        className={cn(
+                          "flex flex-col items-center gap-1.5 rounded-xl border px-3 py-3 text-center transition-all",
+                          active
+                            ? "border-primary bg-primary/5 shadow-sm text-primary"
+                            : "border-border hover:bg-muted/40 text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        <Icon className="h-4 w-4 shrink-0" />
+                        <span className="text-xs font-medium leading-tight">{opt.label}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Recurso — busca quando não vem via props */}
             {!hasResourceFromProps && (
               <div className="space-y-2">
                 <p className="text-[13px] font-semibold text-foreground border-b border-primary/25 pb-1.5 flex items-center gap-2">
                   <span className="w-1 h-[16px] rounded-full bg-primary/70 inline-block" />
-                  {RESOURCE_LABELS[resourceType]}
+                  {RESOURCE_LABELS[selectedType]}
                   <span className="ml-px text-destructive">*</span>
                 </p>
                 <div className="relative">
@@ -265,7 +317,7 @@ export function ShareModal({ open, onClose, resourceType, resourceId, resourceNa
                       onChange={(e) => handleResourceQueryChange(e.target.value)}
                       onFocus={() => resourceResults.length > 0 && setShowResourceResults(true)}
                       onBlur={() => setTimeout(() => setShowResourceResults(false), 150)}
-                      placeholder={`Buscar ${RESOURCE_LABELS[resourceType].toLowerCase()}...`}
+                      placeholder={`Buscar ${RESOURCE_LABELS[selectedType].toLowerCase()}...`}
                       className="pl-9"
                       autoComplete="off"
                     />
@@ -303,7 +355,7 @@ export function ShareModal({ open, onClose, resourceType, resourceId, resourceNa
               <div className="flex items-center gap-2 rounded-xl bg-primary/5 border border-primary/20 px-3 py-2.5">
                 <Share2 className="h-3.5 w-3.5 text-primary shrink-0" />
                 <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground">{RESOURCE_LABELS[resourceType]}</p>
+                  <p className="text-xs text-muted-foreground">{RESOURCE_LABELS[selectedType]}</p>
                   <p className="text-sm font-medium text-foreground truncate">{resourceName}</p>
                 </div>
               </div>
