@@ -1,12 +1,19 @@
 "use client"
 
 import { Suspense } from "react"
+import { useSearchParams } from "next/navigation"
 import { Wallet, Landmark, FileText, Share2 } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
 import { SharesTable } from "@/features/convites"
 
+const VALID_TABS = ["budgets", "budget-lines", "contracts"] as const
+
 function ConvitesPageContent() {
+  const searchParams = useSearchParams()
+  const tabParam = searchParams.get("tab")
+  const activeTab = VALID_TABS.includes(tabParam as any) ? tabParam! : "budgets"
+
   return (
     <Card className="overflow-hidden pb-0.5">
       {/* Header no padrão das outras páginas */}
@@ -23,7 +30,7 @@ function ConvitesPageContent() {
       </div>
 
       <CardContent className="pt-4">
-        <Tabs defaultValue="budgets" className="space-y-4">
+        <Tabs value={activeTab} className="space-y-4">
           <TabsList>
             <TabsTrigger value="budgets" className="gap-2">
               <Wallet className="h-4 w-4" />

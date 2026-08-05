@@ -118,9 +118,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       url: "/convites",
       icon: Share2,
       items: [
-        { title: "Orçamentos", url: "/convites" },
-        { title: "Linhas Orçamentárias", url: "/convites" },
-        { title: "Contratos", url: "/convites" },
+        { title: "Orçamentos", url: "/convites?tab=budgets" },
+        { title: "Linhas Orçamentárias", url: "/convites?tab=budget-lines" },
+        { title: "Contratos", url: "/convites?tab=contracts" },
       ],
     },
 
