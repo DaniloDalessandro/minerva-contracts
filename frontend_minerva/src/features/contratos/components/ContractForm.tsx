@@ -49,14 +49,14 @@ const SectionHeading = ({ children }: { children: React.ReactNode }) => (
 );
 
 const PAYMENT_NATURE_LABELS: Record<string, string> = {
-  "PAGAMENTO ÚNICO": "Único",
-  "PAGAMENTO ANUAL": "Anual",
-  "PAGAMENTO SEMANAL": "Semanal",
-  "PAGAMENTO MENSAL": "Mensal",
-  "PAGAMENTO QUINZENAL": "Quinzenal",
-  "PAGAMENTO TRIMESTRAL": "Trimestral",
-  "PAGAMENTO SEMESTRAL": "Semestral",
-  "PAGAMENTO SOB DEMANDA": "Sob Demanda",
+  "UNICO": "Único",
+  "ANUAL": "Anual",
+  "SEMANAL": "Semanal",
+  "MENSAL": "Mensal",
+  "QUINZENAL": "Quinzenal",
+  "TRIMESTRAL": "Trimestral",
+  "SEMESTRAL": "Semestral",
+  "SOB_DEMANDA": "Sob Demanda",
 };
 
 export default function ContractForm({
@@ -71,7 +71,7 @@ export default function ContractForm({
     budget_line: 0,
     main_inspector: 0,
     substitute_inspector: 0,
-    payment_nature: "PAGAMENTO ÚNICO",
+    payment_nature: "UNICO",
     description: "",
     original_value: "",
     current_value: "",
@@ -114,7 +114,7 @@ export default function ContractForm({
           budget_line: initialData.budget_line?.id || 0,
           main_inspector: initialData.main_inspector?.id || 0,
           substitute_inspector: initialData.substitute_inspector?.id || 0,
-          payment_nature: initialData.payment_nature || "PAGAMENTO ÚNICO",
+          payment_nature: initialData.payment_nature || "UNICO",
           description: initialData.description || "",
           original_value: initialData.original_value || "",
           current_value: initialData.current_value || "",
@@ -130,7 +130,7 @@ export default function ContractForm({
           budget_line: 0,
           main_inspector: 0,
           substitute_inspector: 0,
-          payment_nature: "PAGAMENTO ÚNICO",
+          payment_nature: "UNICO",
           description: "",
           original_value: "",
           current_value: "",
@@ -146,8 +146,8 @@ export default function ContractForm({
   }, [open, initialData]);
 
   useEffect(() => {
-    if (formData.original_value && !formData.current_value) {
-      setFormData((prev: any) => ({ ...prev, current_value: prev.original_value }));
+    if (formData.original_value) {
+      setFormData((prev: any) => prev.current_value ? prev : { ...prev, current_value: prev.original_value });
     }
   }, [formData.original_value]);
 

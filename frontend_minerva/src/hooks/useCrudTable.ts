@@ -1,5 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
-
+import { useState, useCallback, useEffect, useRef } from "react";
 
 export const STATUS_FILTER_ALL = "ALL";
 
@@ -32,12 +31,10 @@ export interface UseCrudTableReturn<T> {
   totalCount: number;
   isLoading: boolean;
 
-
   page: number;
   pageSize: number;
   setPage: (page: number) => void;
   setPageSize: (size: number) => void;
-
 
   search: string;
   sorting: any[];
@@ -49,18 +46,15 @@ export interface UseCrudTableReturn<T> {
   setFilters: (filters: Record<string, string>) => void;
   setStatusFilter: (filter: string) => void;
 
-
   formOpen: boolean;
   editingItem: T | null;
   setFormOpen: (open: boolean) => void;
   setEditingItem: (item: T | null) => void;
 
-
   deleteDialogOpen: boolean;
   itemToDelete: T | null;
   setDeleteDialogOpen: (open: boolean) => void;
   setItemToDelete: (item: T | null) => void;
-
 
   loadItems: () => Promise<void>;
   handleAdd: () => void;
@@ -97,9 +91,6 @@ export function useCrudTable<T = any>(
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [statusFilter, setStatusFilter] = useState(initialStatusFilter);
 
-
-  const [isStatusFilterUserSelected, setIsStatusFilterUserSelected] = useState(false);
-
   const [formOpen, setFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<T | null>(null);
 
@@ -113,17 +104,25 @@ export function useCrudTable<T = any>(
     return `${prefix}${sortItem.id}`;
   }, []);
 
-
   const isAllFilter = useCallback((value: string | undefined): boolean => {
     if (!value) return true;
     const normalizedValue = value.toUpperCase();
     return normalizedValue === "ALL" || normalizedValue === "TODOS";
   }, []);
 
+  // Adapters and consumer callbacks may be recreated during a render. Only a
+  // change of fetch function or query should trigger another request.
+  const successRef = useRef(onLoadSuccess);
+  const errorRef = useRef(onLoadError);
+  successRef.current = onLoadSuccess;
+  errorRef.current = onLoadError;
+  const requestSequence = useRef(0);
+  const fetchItems = service.fetch;
+
   const loadItems = useCallback(async () => {
+    const sequence = ++requestSequence.current;
     try {
       setIsLoading(true);
-
 
       const effectiveStatusFilter = isAllFilter(statusFilter) ? "" : statusFilter;
       const ordering = convertSortingToOrdering(sorting);
@@ -134,7 +133,7 @@ export function useCrudTable<T = any>(
           ? filterValues[filterValues.length - 1]
           : search;
 
-      const data = await service.fetch(
+      const data = await fetchItems(
         page,
         pageSize,
         searchParam,
@@ -142,18 +141,18 @@ export function useCrudTable<T = any>(
         effectiveStatusFilter
       );
 
+      if (sequence !== requestSequence.current) return;
       setItems(data.results);
       setTotalCount(data.count);
 
-      if (onLoadSuccess) {
-        onLoadSuccess(data.results);
-      }
+      successRef.current?.(data.results);
     } catch (error) {
-      if (onLoadError) {
-        onLoadError(error);
-      }
+      if (sequence !== requestSequence.current) return;
+      setItems([]);
+      setTotalCount(0);
+      errorRef.current?.(error);
     } finally {
-      setIsLoading(false);
+      if (sequence === requestSequence.current) setIsLoading(false);
     }
   }, [
     page,
@@ -162,15 +161,14 @@ export function useCrudTable<T = any>(
     sorting,
     filters,
     statusFilter,
-    service,
+    fetchItems,
     convertSortingToOrdering,
     isAllFilter,
-    onLoadSuccess,
-    onLoadError,
   ]);
 
   useEffect(() => {
-    loadItems();
+    void loadItems();
+    return () => { requestSequence.current += 1; };
   }, [loadItems]);
 
   const handleAdd = useCallback(() => {
@@ -195,18 +193,7 @@ export function useCrudTable<T = any>(
 
   const handleFilterChange = useCallback((columnId: string, value: string) => {
     if (columnId === "status" || columnId === "is_active") {
-      const normalizedValue = value?.toUpperCase?.() || "";
-
-      if (normalizedValue === "ALL" || normalizedValue === "TODOS" || value === "") {
-        setStatusFilter(STATUS_FILTER_ALL);
-        setIsStatusFilterUserSelected(value !== "");
-      } else if (value) {
-        setStatusFilter(value);
-        setIsStatusFilterUserSelected(true);
-      } else {
-        setStatusFilter(initialStatusFilter);
-        setIsStatusFilterUserSelected(false);
-      }
+      setStatusFilter(isAllFilter(value) ? STATUS_FILTER_ALL : value);
       setPage(1);
     } else {
       setFilters((prev) => {
@@ -221,7 +208,7 @@ export function useCrudTable<T = any>(
       });
       setPage(1);
     }
-  }, [initialStatusFilter]);
+  }, [isAllFilter]);
 
   const handleSortingChange = useCallback((newSorting: any[]) => {
     setSorting(newSorting);
@@ -237,11 +224,10 @@ export function useCrudTable<T = any>(
     setPage(1);
   }, []);
 
-
   const getInitialFilters = () => {
     const initialFilters: any[] = [];
 
-    if (isStatusFilterUserSelected && statusFilter && !isAllFilter(statusFilter)) {
+    if (statusFilter && !isAllFilter(statusFilter)) {
       const statusColumnId = (statusFilter === "active" || statusFilter === "inactive") ? "is_active" : "status";
       initialFilters.push({ id: statusColumnId, value: statusFilter });
     }

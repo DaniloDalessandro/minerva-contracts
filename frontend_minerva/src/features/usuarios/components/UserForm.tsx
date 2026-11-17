@@ -63,8 +63,8 @@ export default function UserForm({
       if (initialData) {
         const parts = (initialData.name || "").split(" ")
         setForm({
-          first_name: parts[0] || "",
-          last_name: parts.slice(1).join(" ") || "",
+          first_name: initialData.first_name ?? parts[0] ?? "",
+          last_name: initialData.last_name ?? parts.slice(1).join(" "),
           email: initialData.email,
           password: "",
           group: initialData.groups[0] || "FUNCIONARIO",

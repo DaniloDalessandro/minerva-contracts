@@ -32,65 +32,37 @@ export class ContractService {
     if (ordering) params.append('ordering', ordering);
     if (statusFilter) params.append('status', statusFilter);
 
-    console.log("📄 Buscando contratos:", params.toString());
-
-    const data = await fetchContractsAPI(params);
-    console.log("📊 Dados contratos recebidos:", {
-      count: data.count,
-      results: data.results?.length || 0,
-    });
-
-    return data;
+    return fetchContractsAPI(params);
   }
 
   static async fetchContractById(id: number): Promise<Contract> {
-    console.log("📄 Buscando contrato por ID:", id);
-    const data = await fetchContractByIdAPI(id);
-    console.log("✅ Contrato encontrado:", data.protocol_number);
-    return data;
+    return fetchContractByIdAPI(id);
   }
 
   static async createContract(data: CreateContractData): Promise<Contract> {
-    console.log("➕ Criando novo contrato");
-    const result = await createContractAPI(data);
-    console.log("✅ Contrato criado com sucesso:", result.id);
-    return result;
+    return createContractAPI(data);
   }
 
   static async updateContract(data: CreateContractData): Promise<Contract> {
-    console.log("✏️ Atualizando contrato:", data.id);
-    const result = await updateContractAPI(data);
-    console.log("✅ Contrato atualizado com sucesso");
-    return result;
+    return updateContractAPI(data);
   }
 
   static async deleteContract(id: number): Promise<void> {
-    console.log("🗑️ Deletando contrato:", id);
     await deleteContractAPI(id);
-    console.log("✅ Contrato deletado com sucesso");
+
   }
 
   static async toggleStatus(id: number): Promise<Contract> {
-    console.log("🔄 Alternando status do contrato:", id);
-    const result = await toggleContractStatusAPI(id);
-    console.log("✅ Status alterado para:", result.status);
-    return result;
+    return toggleContractStatusAPI(id);
   }
 
   static async fetchEmployees(): Promise<any[]> {
-    console.log("👥 Buscando funcionários para dropdown");
-    const data = await fetchEmployeesAPI();
-    console.log("📊 Funcionários encontrados:", data.length);
-    return data;
+    return fetchEmployeesAPI();
   }
 
   static async fetchBudgetLines(): Promise<any[]> {
-    console.log("💰 Buscando linhas orçamentárias para dropdown");
-    const data = await fetchBudgetLinesAPI();
-    console.log("📊 Linhas orçamentárias encontradas:", data.length);
-    return data;
+    return fetchBudgetLinesAPI();
   }
-
 
   static async getContracts(): Promise<ContractsResponse> {
     return this.fetchContracts();

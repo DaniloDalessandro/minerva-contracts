@@ -1,14 +1,7 @@
+import { fetchAllRecords, fetchCollection } from './collection';
 import { apiClient } from './client';
 import { API_ENDPOINTS } from '@/constants/api-endpoints';
-import type {
-  Budget,
-  BudgetMovement,
-  CreateBudgetData,
-  CreateBudgetMovementData,
-  BudgetLineListItem,
-  BudgetLinesSummary,
-  ManagementCenterReference,
-} from '@/types/entities/budget';
+import type { Budget, BudgetMovement, CreateBudgetData, CreateBudgetMovementData } from '@/types/entities/budget';
 import type { Contract } from '@/types/entities/contrato';
 import type { BudgetLine } from '@/types/entities/budget-line';
 
@@ -16,10 +9,7 @@ export type { Budget, BudgetMovement, CreateBudgetData, CreateBudgetMovementData
 
 
 export async function fetchBudgetsAPI(params: URLSearchParams): Promise<any> {
-  const url = `${API_ENDPOINTS.BUDGET.LIST}?${params.toString()}`;
-  const res = await apiClient(url);
-  if (!res.ok) throw new Error("Erro ao buscar orçamentos");
-  return res.json();
+  return fetchCollection(API_ENDPOINTS.BUDGET.LIST, params);
 }
 
 export async function fetchBudgetByIdAPI(id: number): Promise<Budget> {
@@ -54,7 +44,10 @@ export async function deleteBudgetAPI(id: number): Promise<boolean> {
   const res = await apiClient(url, {
     method: "DELETE",
   });
-  if (!res.ok) throw new Error("Erro ao deletar orçamento");
+  if (!res.ok) {
+    const error = await res.json().catch(() => null);
+    throw new Error(error?.message || error?.detail || "Erro ao deletar orçamento");
+  }
   return true;
 }
 
@@ -70,7 +63,7 @@ export async function createBudgetMovementAPI(data: CreateBudgetMovementData): P
   const url = API_ENDPOINTS.BUDGET_MOVEMENT.CREATE;
   const res = await apiClient(url, {
     method: "POST",
-    body: JSON.stringify(data),
+    body: JSON.stringify({ ...data, source_id: data.source, destination_id: data.destination }),
   });
   if (!res.ok) throw new Error("Erro ao criar movimentação");
   return res.json();
@@ -80,7 +73,7 @@ export async function updateBudgetMovementAPI(id: number, data: CreateBudgetMove
   const url = API_ENDPOINTS.BUDGET_MOVEMENT.UPDATE(id);
   const res = await apiClient(url, {
     method: "PUT",
-    body: JSON.stringify(data),
+    body: JSON.stringify({ ...data, source_id: data.source, destination_id: data.destination }),
   });
   if (!res.ok) throw new Error("Erro ao atualizar movimentação");
   return res.json();
@@ -96,10 +89,7 @@ export async function deleteBudgetMovementAPI(id: number): Promise<boolean> {
 }
 
 export async function getBudgetMovementsByBudgetAPI(budgetId: number): Promise<BudgetMovement[]> {
-  const res = await apiClient(API_ENDPOINTS.BUDGET_MOVEMENT.LIST);
-  if (!res.ok) throw new Error("Erro ao buscar movimentações do orçamento");
-  const data = await res.json();
-  const movements = data.results || data;
+  const movements = await fetchAllRecords(API_ENDPOINTS.BUDGET_MOVEMENT.LIST);
 
   const filteredMovements = movements.filter((movement: BudgetMovement) => {
     return movement.source?.id === budgetId || movement.destination?.id === budgetId;
@@ -147,7 +137,7 @@ export async function fetchBudgetContractsAPI(budgetId: number): Promise<Contrac
     });
 
     return allContracts;
-  } catch (error) {
+  } catch  {
     return [];
   }
 }

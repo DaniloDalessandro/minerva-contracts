@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useRef, useState, Suspense } from "react"
+import { useCallback, useEffect, useRef, useState, Suspense } from "react";
 import type React from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
@@ -114,12 +114,6 @@ function AlicePageContent() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
-
-  const assistantStatus = useMemo(() => {
-    if (isLoading) return awaitingClarification ? "Aguardando contexto" : "Pensando"
-    if (awaitingClarification) return "Aguardando resposta"
-    return "Online"
-  }, [awaitingClarification, isLoading])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -346,7 +340,6 @@ function AlicePageContent() {
         <div className="flex h-full flex-col">
           <AliceHeader
             isLoading={isLoading}
-            status={assistantStatus}
             sessionId={sessionId}
             onNewSession={startNewSession}
           />
@@ -404,12 +397,10 @@ function AlicePageContent() {
 
 function AliceHeader({
   isLoading,
-  status,
   sessionId,
   onNewSession,
 }: {
   isLoading: boolean
-  status: string
   sessionId: string
   onNewSession: () => void
 }) {

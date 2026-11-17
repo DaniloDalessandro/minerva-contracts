@@ -51,6 +51,29 @@ User.objects.create_superuser(email='admin@admin.com', password='admin')
 
 ---
 
+## Configuração de e-mail
+
+O arquivo `.env.example` na raiz contém as variáveis do Docker prontas para preencher. Se já existir um `.env`, mantenha os valores atuais e acrescente somente as variáveis ausentes. Não versione credenciais.
+
+Para envio real de recuperação de senha, convites e avisos de vencimento, configure no `.env` da raiz:
+
+```env
+EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+EMAIL_HOST=
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER=
+EMAIL_HOST_PASSWORD=
+DEFAULT_FROM_EMAIL=
+APP_URL=http://localhost:4002
+```
+
+Preencha host, usuário, senha e remetente com os dados do provedor. `APP_URL` deve ser o endereço público do Minerva, usado nos links dos e-mails. Backend e worker recebem a mesma configuração. Após preencher, recrie os serviços com `docker compose up -d backend celery`.
+
+Para testes locais, `EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend` registra as mensagens no console. O override `docker-compose.local.yml` força esse modo no backend e no worker, mesmo que o `.env` indique SMTP; execute sem esse override para validar entrega externa. No desenvolvimento sem Docker, use `backend_minerva/.env.example` e ajuste `FRONTEND_URL`.
+
+---
+
 ## Desenvolvimento local
 
 **Backend**
@@ -82,7 +105,7 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 
 ```bash
 cd frontend_minerva
-npx next lint            # ESLint
+npm run lint             # ESLint
 npx tsc --noEmit -p tsconfig.json   # Typecheck
 ```
 
@@ -203,3 +226,33 @@ Principais namespaces:
 | `/alice` | Assistente de IA (chat, sessões, schema, feedback) |
 | `/notifications` | Notificações de vencimento de contratos |
 | `/sharing` | Compartilhamento de recursos + notificações |
+
+
+## Testes de interface com dados reais
+
+Para rodar localmente com e-mails registrados apenas no console:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
+```
+
+A suíte padrão verifica telas, formulários e responsividade. A suíte
+`frontend_minerva/tests/e2e/crud-workflows.spec.ts` exercita cadastros, edições,
+vínculos, movimentações, PDFs, encerramento, inativação e exclusões pelo navegador.
+Ela fica desabilitada por padrão porque grava dados no banco. Use um banco local
+de teste e habilite explicitamente, por exemplo no PowerShell:
+
+```powershell
+cd frontend_minerva
+$env:RUN_CRUD_WORKFLOWS = '1'
+$env:QA_LEDGER_FILE = Join-Path $env:TEMP 'minerva-qa-ledger.json'
+npm run test:e2e -- crud-workflows.spec.ts --project desktop-1366
+```
+
+Os registros recebem prefixo `QA-MV-` e os IDs são registrados no arquivo indicado
+por `QA_LEDGER_FILE`. Execute um projeto de navegador por vez quando usar o mesmo
+arquivo de registro. A sequência testa a exclusão de linhas vazias e o bloqueio
+de linhas com contratos; registros inativados continuam no banco para auditoria.
+Após o teste, descarte o banco de teste ou remova somente os IDs QA registrados.
+Os e-mails de teste usam `example.invalid`. O modo de indisponibilidade da Alice
+pode ser validado sem chave de IA.

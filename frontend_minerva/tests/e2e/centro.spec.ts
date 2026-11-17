@@ -13,7 +13,7 @@ test.describe("Centros — Página", () => {
 
   test("exibe subtítulo da página", async ({ page }) => {
     await goToCentro(page);
-    await expect(page.getByText(/gerenciamento de centros gestores/i)).toBeVisible();
+    await expect(page.getByText("Gerenciamento de centros gestores e solicitantes", { exact: true })).toBeVisible();
   });
 
   test("exibe as duas abas", async ({ page }) => {

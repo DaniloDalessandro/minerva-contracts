@@ -1,23 +1,25 @@
 "use client"
 
+import { parseDisplayDate } from "@/lib/date";
+
 import React, { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { fetchBudgetLineById, BudgetLine } from "@/lib/api/budgetlines"
 import { fetchContractsByBudgetLine } from "@/lib/api/contratos"
 import type { Contract } from "@/types/entities/contrato"
+import { usePermissions } from "@/hooks/usePermissions";
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import {
-  ArrowLeft, Edit, Printer,
-  User, DollarSign, FileText, Building, Tag, CheckCircle, Settings, ExternalLink,
-} from "lucide-react"
+import { ArrowLeft, Edit, Printer, User, FileText, Building, Tag, CheckCircle, Settings, ExternalLink } from "lucide-react";
 import { generateLinhaOrcamentariaPdf } from "@/lib/pdf-report"
 import Link from "next/link"
 
 export default function BudgetLineDetailsPage() {
+  const { canManageLinhas } = usePermissions()
+
   const params = useParams()
   const router = useRouter()
   const id = params?.id as string
@@ -28,24 +30,23 @@ export default function BudgetLineDetailsPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (id) loadDetails()
-  }, [id])
-
-  const loadDetails = async () => {
-    try {
-      setLoading(true)
-      const [bl, cts] = await Promise.all([
-        fetchBudgetLineById(parseInt(id)),
-        fetchContractsByBudgetLine(parseInt(id)).catch(() => []),
-      ])
-      setBudgetLine(bl)
-      setContracts(cts)
-    } catch {
-      setError("Erro ao carregar os detalhes da linha orçamentária")
-    } finally {
-      setLoading(false)
+    async function loadDetails() {
+      try {
+        setLoading(true)
+        const [bl, cts] = await Promise.all([
+          fetchBudgetLineById(parseInt(id)),
+          fetchContractsByBudgetLine(parseInt(id)).catch(() => []),
+        ])
+        setBudgetLine(bl)
+        setContracts(cts)
+      } catch {
+        setError("Erro ao carregar os detalhes da linha orçamentária")
+      } finally {
+        setLoading(false)
+      }
     }
-  }
+    if (id) void loadDetails()
+  }, [id])
 
   const handleEdit = () => {
     window.sessionStorage.setItem("editBudgetLineId", id)
@@ -56,10 +57,10 @@ export default function BudgetLineDetailsPage() {
     new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(parseFloat(v))
 
   const fmtDate = (d?: string | null) =>
-    d ? new Date(d).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" }) : "—"
+    d ? parseDisplayDate(d).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" }) : "—"
 
   const fmtDateTime = (d: string) =>
-    new Date(d)
+    parseDisplayDate(d)
       .toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })
       .replace(",", "")
 
@@ -122,10 +123,10 @@ export default function BudgetLineDetailsPage() {
               <Printer className="h-3.5 w-3.5 mr-1.5" />
               Gerar PDF
             </Button>
-            <Button size="sm" onClick={handleEdit}>
+            {canManageLinhas && (<Button size="sm" onClick={handleEdit}>
               <Edit className="h-3.5 w-3.5 mr-1.5" />
               Editar
-            </Button>
+            </Button>)}
           </div>
         </div>
 

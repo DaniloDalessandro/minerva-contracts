@@ -130,7 +130,6 @@ export function UserProfileForm({ isOpen, onClose }: UserProfileFormProps) {
     }
   }, [isOpen])
 
-
   useEffect(() => {
     if (formData.direction_id) {
       const filtered = managements.filter(m => m.direction === formData.direction_id)
@@ -139,7 +138,6 @@ export function UserProfileForm({ isOpen, onClose }: UserProfileFormProps) {
       setFilteredManagements([])
     }
   }, [formData.direction_id, managements])
-
 
   useEffect(() => {
     if (formData.management_id) {
@@ -251,7 +249,6 @@ export function UserProfileForm({ isOpen, onClose }: UserProfileFormProps) {
         throw new Error(errorData.error || "Erro ao atualizar perfil")
       }
 
-
       if (formData.currentPassword && formData.newPassword) {
         const passwordResponse = await apiClient(API_ENDPOINTS.AUTH.CHANGE_PASSWORD, {
           method: "POST",
@@ -271,7 +268,6 @@ export function UserProfileForm({ isOpen, onClose }: UserProfileFormProps) {
       const selectedDirection = directions.find(d => d.id === formData.direction_id)
       const selectedManagement = managements.find(m => m.id === formData.management_id)
       const selectedCoordination = coordinations.find(c => c.id === formData.coordination_id)
-
 
       updateUserProfile({
         name: formData.name,
@@ -319,7 +315,6 @@ export function UserProfileForm({ isOpen, onClose }: UserProfileFormProps) {
                 onChange={(id) => setFormData(prev => ({ ...prev, avatar: id }))}
               />
             </div>
-
 
             <div className="grid gap-3">
               <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
@@ -379,7 +374,6 @@ export function UserProfileForm({ isOpen, onClose }: UserProfileFormProps) {
                 </div>
               </div>
             </div>
-
 
             <div className="grid gap-3">
               <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
@@ -451,7 +445,6 @@ export function UserProfileForm({ isOpen, onClose }: UserProfileFormProps) {
                 Gerência e Coordenação são opcionais.
               </p>
             </div>
-
 
             <div className="grid gap-3">
               <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">

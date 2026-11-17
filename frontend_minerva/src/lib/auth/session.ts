@@ -229,21 +229,17 @@ export async function getValidAccessToken(thresholdSeconds = 60): Promise<string
     throw new AuthSessionError("Nenhum token disponivel", "missing_token")
   }
 
-
   if (access && isTokenValid(access) && !tokenExpiringSoon(access, thresholdSeconds)) {
     return access
   }
-
 
   if (storedUser && !access) {
     return COOKIE_SESSION_TOKEN
   }
 
-
   if (access && isTokenValid(access)) {
     return access
   }
-
 
   const refreshed = await refreshAccessToken()
   if (refreshed) return refreshed

@@ -4,7 +4,6 @@ Views de gestão de usuários e convites — acesso exclusivo para superusuário
 import logging
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
@@ -90,14 +89,14 @@ class AdminUserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            'id', 'email', 'name', 'groups', 'is_active', 'is_superuser',
+            'id', 'email', 'first_name', 'last_name', 'name', 'groups', 'is_active', 'is_superuser',
             'date_joined', 'last_login', 'avatar',
         ]
 
     def get_name(self, obj):
         if obj.employee:
             return obj.employee.full_name
-        return obj.first_name or obj.email
+        return obj.get_full_name().strip() or obj.email
 
     def get_groups(self, obj):
         return [g.name for g in obj.groups.all()]

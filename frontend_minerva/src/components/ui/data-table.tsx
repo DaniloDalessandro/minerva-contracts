@@ -190,6 +190,8 @@ export function DataTable<TData, TValue>({
     null
   );
 
+  React.useEffect(() => { setSelectedRowIndex(null); }, [data, pageIndex]);
+
   const [sorting, setSorting] = React.useState<SortingState>([]);
 
 

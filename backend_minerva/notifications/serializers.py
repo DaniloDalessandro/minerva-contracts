@@ -13,6 +13,8 @@ class ContractNotificationSerializer(serializers.ModelSerializer):
         source='contract.expiration_date', read_only=True
     )
     days_until_expiration = serializers.SerializerMethodField()
+    is_read = serializers.BooleanField(source='user_is_read', read_only=True, default=False)
+    read_at = serializers.DateTimeField(source='user_read_at', read_only=True, default=None)
 
     class Meta:
         model = ContractNotification
@@ -35,6 +37,6 @@ class ContractNotificationSerializer(serializers.ModelSerializer):
     def get_days_until_expiration(self, obj):
         from django.utils import timezone
         if obj.contract.expiration_date:
-            delta = obj.contract.expiration_date - timezone.now().date()
+            delta = obj.contract.expiration_date - timezone.localdate()
             return delta.days
         return None

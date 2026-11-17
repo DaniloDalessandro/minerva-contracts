@@ -33,6 +33,97 @@ class BudgetSerializer(serializers.ModelSerializer):
         read_only_fields = ['created_at', 'updated_at', 'available_amount', 'used_amount', 'calculated_available_amount', 'valor_remanejado_entrada', 'valor_remanejado_saida']
 
 
+    def create(self, validated_data):
+        management_center_id = validated_data.pop('management_center_id', None)
+        if management_center_id:
+            try:
+                management_center = ManagementCenter.objects.get(id=management_center_id)
+                validated_data['management_center'] = management_center
+            except ManagementCenter.DoesNotExist:
+                raise serializers.ValidationError(
+                    {'management_center_id': 'Centro gestor não encontrado.'}
+                )
+
+        total_amount = validated_data.get('total_amount')
+        if total_amount is None:
+            raise serializers.ValidationError(
+                {'total_amount': 'Valor total é obrigatório.'}
+            )
+
+        validated_data['available_amount'] = total_amount
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        management_center_id = validated_data.pop('management_center_id', None)
+        if management_center_id:
+            try:
+                management_center = ManagementCenter.objects.get(id=management_center_id)
+                validated_data['management_center'] = management_center
+            except ManagementCenter.DoesNotExist:
+                raise serializers.ValidationError(
+                    {'management_center_id': 'Centro gestor não encontrado.'}
+                )
+
+        return super().update(instance, validated_data)
+
+    def validate(self, data):
+        required_fields = ['year', 'category', 'total_amount']
+        for field in required_fields:
+            if not data.get(field):
+                raise serializers.ValidationError(
+                    {field: f"O campo {field} é obrigatório."}
+                )
+
+        management_center = data.get('management_center')
+        management_center_id = data.get('management_center_id')
+
+        if not management_center and management_center_id:
+            try:
+                management_center = ManagementCenter.objects.get(id=management_center_id)
+                data['management_center'] = management_center
+            except ManagementCenter.DoesNotExist:
+                raise serializers.ValidationError(
+                    {'management_center_id': 'Centro gestor não encontrado.'}
+                )
+
+        if not management_center and not management_center_id:
+            raise serializers.ValidationError(
+                {'management_center_id': 'Centro gestor é obrigatório.'}
+            )
+
+        total_amount = data.get('total_amount')
+        if total_amount is not None and total_amount <= 0:
+            raise serializers.ValidationError(
+                {'total_amount': 'O valor total deve ser maior que zero.'}
+            )
+
+        year = data.get('year')
+        if year:
+            try:
+                from .utils.validators import validate_year
+                validate_year(year)
+            except DjangoValidationError as e:
+                raise serializers.ValidationError({'year': str(e)})
+
+        category = data.get('category')
+
+        if management_center and year and category:
+            budget_exists = Budget.objects.filter(
+                year=year,
+                category=category,
+                management_center=management_center
+            )
+
+            if self.instance:
+                budget_exists = budget_exists.exclude(pk=self.instance.pk)
+
+            if budget_exists.exists():
+                error_msg = f"Já existe um orçamento para o ano de {year}, categoria {category} e centro gestor {management_center.name}."
+                raise serializers.ValidationError({'non_field_errors': [error_msg]})
+
+        return data
+
+
 class BudgetDetailSerializer(BudgetSerializer):
     """
     Serializer detalhado para Budget incluindo linhas orçamentárias vinculadas
@@ -131,96 +222,6 @@ class BudgetDetailSerializer(BudgetSerializer):
             'net_movement': float(incoming['total'] - outgoing['total']),
             'last_movement_date': last_movement
         }
-
-    def create(self, validated_data):
-        management_center_id = validated_data.pop('management_center_id', None)
-        if management_center_id:
-            try:
-                management_center = ManagementCenter.objects.get(id=management_center_id)
-                validated_data['management_center'] = management_center
-            except ManagementCenter.DoesNotExist:
-                raise serializers.ValidationError(
-                    {'management_center_id': 'Centro gestor não encontrado.'}
-                )
-
-        total_amount = validated_data.get('total_amount')
-        if total_amount is None:
-            raise serializers.ValidationError(
-                {'total_amount': 'Valor total é obrigatório.'}
-            )
-
-        validated_data['available_amount'] = total_amount
-        return super().create(validated_data)
-
-    def update(self, instance, validated_data):
-        management_center_id = validated_data.pop('management_center_id', None)
-        if management_center_id:
-            try:
-                management_center = ManagementCenter.objects.get(id=management_center_id)
-                validated_data['management_center'] = management_center
-            except ManagementCenter.DoesNotExist:
-                raise serializers.ValidationError(
-                    {'management_center_id': 'Centro gestor não encontrado.'}
-                )
-
-        return super().update(instance, validated_data)
-
-    def validate(self, data):
-        required_fields = ['year', 'category', 'total_amount']
-        for field in required_fields:
-            if not data.get(field):
-                raise serializers.ValidationError(
-                    {field: f"O campo {field} é obrigatório."}
-                )
-
-        management_center = data.get('management_center')
-        management_center_id = data.get('management_center_id')
-
-        if not management_center and management_center_id:
-            try:
-                management_center = ManagementCenter.objects.get(id=management_center_id)
-                data['management_center'] = management_center
-            except ManagementCenter.DoesNotExist:
-                raise serializers.ValidationError(
-                    {'management_center_id': 'Centro gestor não encontrado.'}
-                )
-
-        if not management_center and not management_center_id:
-            raise serializers.ValidationError(
-                {'management_center_id': 'Centro gestor é obrigatório.'}
-            )
-
-        total_amount = data.get('total_amount')
-        if total_amount is not None and total_amount <= 0:
-            raise serializers.ValidationError(
-                {'total_amount': 'O valor total deve ser maior que zero.'}
-            )
-
-        year = data.get('year')
-        if year:
-            try:
-                from .utils.validators import validate_year
-                validate_year(year)
-            except DjangoValidationError as e:
-                raise serializers.ValidationError({'year': str(e)})
-
-        category = data.get('category')
-
-        if management_center and year and category:
-            budget_exists = Budget.objects.filter(
-                year=year,
-                category=category,
-                management_center=management_center
-            )
-
-            if self.instance:
-                budget_exists = budget_exists.exclude(pk=self.instance.pk)
-
-            if budget_exists.exists():
-                error_msg = f"Já existe um orçamento para o ano de {year}, categoria {category} e centro gestor {management_center.name}."
-                raise serializers.ValidationError({'non_field_errors': [error_msg]})
-
-        return data
 
 class BudgetMovementSerializer(serializers.ModelSerializer):
 

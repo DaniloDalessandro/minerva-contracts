@@ -1,5 +1,7 @@
 "use client"
 
+import { parseDisplayDate } from "@/lib/date";
+
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { ColaboradorService } from "@/services"
@@ -7,6 +9,7 @@ import type { Colaborador, ColaboradorContrato, ColaboradorAuxilio } from "@/typ
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Edit, Download } from "lucide-react"
+import { usePermissions } from "@/hooks/usePermissions";
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { generateColaboradorPdf } from "@/lib/pdf-report"
@@ -41,6 +44,8 @@ function Section({ title, muted = false, children }: { title: string; muted?: bo
 }
 
 export default function ColaboradorDetailsPage() {
+  const { canManageColaboradores } = usePermissions()
+
   const params = useParams()
   const router = useRouter()
   const colaboradorId = Number(params.id)
@@ -73,10 +78,10 @@ export default function ColaboradorDetailsPage() {
   }, [colaboradorId])
 
   const fmtDate = (d?: string) =>
-    d ? new Date(d).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" }) : "-"
+    d ? parseDisplayDate(d).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" }) : "-"
 
   const fmtDateTime = (d: string) =>
-    new Date(d)
+    parseDisplayDate(d)
       .toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })
       .replace(",", "")
 
@@ -154,13 +159,13 @@ export default function ColaboradorDetailsPage() {
               <Download className="h-3.5 w-3.5" />
               Baixar PDF
             </Button>
-            <Button
+            {canManageColaboradores && (<Button
               size="sm"
               onClick={() => { window.sessionStorage.setItem("editColaboradorId", colaboradorId.toString()); router.push("/colaboradores") }}
             >
               <Edit className="h-3.5 w-3.5" />
               Editar
-            </Button>
+            </Button>)}
           </div>
         </div>
 

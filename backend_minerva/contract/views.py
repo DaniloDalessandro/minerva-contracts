@@ -8,6 +8,7 @@ from django.utils import timezone
 from datetime import timedelta
 from django.db.models import Sum, Count, Q
 from accounts.permissions import IsCoordinatorOrAbove
+from core.pagination import CustomPageNumberPagination
 from .models import ContractInstallment, ContractAmendment, Contract
 from employee.utils.access_control import get_employee_queryset
 from employee.models import Employee
@@ -29,6 +30,17 @@ class ContractListAPIView(generics.ListAPIView):
     queryset = Contract.objects.all()
     serializer_class = ContractSerializer
     permission_classes = [IsAuthenticated]
+    # Keep the collection controls server-side so filtering precedes pagination.
+    pagination_class = CustomPageNumberPagination
+    search_fields = [
+        'protocol_number', 'description', 'main_inspector__full_name',
+        'substitute_inspector__full_name', 'payment_nature', 'budget_line__summary_description',
+    ]
+    ordering_fields = [
+        'id', 'protocol_number', 'current_value', 'original_value',
+        'start_date', 'end_date', 'expiration_date', 'signing_date',
+        'status', 'payment_nature', 'created_at', 'updated_at',
+    ]
 
     def get_queryset(self):
         from django.db.models import Q

@@ -19,7 +19,7 @@ export interface Contract extends OptimisticUpdate {
   budget_line: BudgetLineReference;
   main_inspector: InspectorReference;
   substitute_inspector: InspectorReference;
-  payment_nature: 'PAGAMENTO ÚNICO' | 'PAGAMENTO ANUAL' | 'PAGAMENTO SEMANAL' | 'PAGAMENTO MENSAL' | 'PAGAMENTO QUINZENAL' | 'PAGAMENTO TRIMESTRAL' | 'PAGAMENTO SEMESTRAL' | 'PAGAMENTO SOB DEMANDA';
+  payment_nature: 'UNICO' | 'ANUAL' | 'SEMANAL' | 'MENSAL' | 'QUINZENAL' | 'TRIMESTRAL' | 'SEMESTRAL' | 'SOB_DEMANDA';
   description: string;
   original_value: string;
   current_value: string;
@@ -40,7 +40,7 @@ export interface CreateContractData {
   budget_line: number;
   main_inspector: number;
   substitute_inspector: number;
-  payment_nature: 'PAGAMENTO ÚNICO' | 'PAGAMENTO ANUAL' | 'PAGAMENTO SEMANAL' | 'PAGAMENTO MENSAL' | 'PAGAMENTO QUINZENAL' | 'PAGAMENTO TRIMESTRAL' | 'PAGAMENTO SEMESTRAL' | 'PAGAMENTO SOB DEMANDA';
+  payment_nature: 'UNICO' | 'ANUAL' | 'SEMANAL' | 'MENSAL' | 'QUINZENAL' | 'TRIMESTRAL' | 'SEMESTRAL' | 'SOB_DEMANDA';
   description: string;
   original_value: string;
   current_value: string;

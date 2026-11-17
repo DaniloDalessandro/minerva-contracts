@@ -1,7 +1,8 @@
 "use client"
 
 import React, { useEffect, useState, useCallback } from "react"
-import { Bell, Clock, CheckCheck, X } from "lucide-react"
+import { Bell, Clock, CheckCheck, X, Loader2, AlertCircle } from "lucide-react"
+import { toast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
 import {
   Popover,
@@ -29,14 +30,21 @@ export function NotificationBell() {
   const [unreadCount, setUnreadCount] = useState(0)
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [fetching, setFetching] = useState(true)
+  const [loadError, setLoadError] = useState(false)
+  const [readingId, setReadingId] = useState<number | null>(null)
 
   const load = useCallback(async () => {
+    setFetching(true)
     try {
       const data = await fetchNotifications()
       setNotifications(data.results)
       setUnreadCount(data.unread_count)
+      setLoadError(false)
     } catch {
-
+      setLoadError(true)
+    } finally {
+      setFetching(false)
     }
   }, [])
 
@@ -47,28 +55,36 @@ export function NotificationBell() {
   }, [load])
 
   const handleMarkRead = async (id: number) => {
+    if (readingId !== null || loading) return
+    setReadingId(id)
     try {
       await markNotificationRead(id)
-      setNotifications(prev =>
-        prev.map(n => n.id === id ? { ...n, is_read: true } : n)
-      )
-      setUnreadCount(prev => Math.max(0, prev - 1))
-    } catch {}
+      await load()
+    } catch {
+      toast({ title: "Não foi possível marcar a notificação como lida", variant: "destructive" })
+    } finally {
+      setReadingId(null)
+    }
   }
 
   const handleMarkAllRead = async () => {
+    if (loading || readingId !== null) return
     setLoading(true)
     try {
       await markAllNotificationsRead()
-      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
-      setUnreadCount(0)
-    } catch {} finally {
+      await load()
+    } catch {
+      toast({ title: "Não foi possível marcar as notificações como lidas", variant: "destructive" })
+    } finally {
       setLoading(false)
     }
   }
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={(nextOpen) => {
+      setOpen(nextOpen)
+      if (nextOpen) void load()
+    }}>
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
@@ -103,7 +119,7 @@ export function NotificationBell() {
               variant="ghost"
               size="sm"
               onClick={handleMarkAllRead}
-              disabled={loading}
+              disabled={loading || fetching || readingId !== null}
               className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
             >
               <CheckCheck className="h-3 w-3 mr-1" />
@@ -112,9 +128,18 @@ export function NotificationBell() {
           )}
         </div>
 
-
         <div className="max-h-80 overflow-y-auto">
-          {notifications.length === 0 ? (
+          {loadError ? (
+            <div role="alert" className="flex flex-col items-center gap-2 px-4 py-6 text-center text-muted-foreground">
+              <AlertCircle className="h-6 w-6" />
+              <p className="text-sm">Não foi possível carregar as notificações.</p>
+              <Button variant="outline" size="sm" onClick={() => void load()} disabled={fetching}>Tentar novamente</Button>
+            </div>
+          ) : fetching && notifications.length === 0 ? (
+            <div role="status" className="flex items-center justify-center gap-2 py-8 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" /> Carregando notificações...
+            </div>
+          ) : notifications.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-8 text-muted-foreground">
               <Bell className="h-8 w-8 opacity-30" />
               <p className="text-sm">Nenhuma notificação</p>
@@ -164,6 +189,7 @@ export function NotificationBell() {
                     className="h-6 w-6 shrink-0 text-muted-foreground hover:text-foreground rounded-md"
                     onClick={() => handleMarkRead(n.id)}
                     aria-label="Marcar como lida"
+                    disabled={loading || fetching || readingId !== null}
                   >
                     <X className="h-3 w-3" />
                   </Button>

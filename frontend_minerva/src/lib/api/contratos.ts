@@ -1,3 +1,5 @@
+import { fetchAllRecords } from './collection';
+import { budgetLineLabel, normalizeContract } from './normalizers';
 import { apiClient } from './client';
 import { API_ENDPOINTS } from '@/constants/api-endpoints';
 import type {
@@ -15,7 +17,8 @@ export async function fetchContractsAPI(params: URLSearchParams): Promise<Contra
   if (!response.ok) {
     throw new Error('Falha ao buscar contratos');
   }
-  return response.json();
+  const data = await response.json();
+  return { ...data, results: data.results.map(normalizeContract) };
 }
 
 export async function fetchContractByIdAPI(id: number): Promise<Contract> {
@@ -24,7 +27,7 @@ export async function fetchContractByIdAPI(id: number): Promise<Contract> {
   if (!response.ok) {
     throw new Error('Falha ao buscar contrato');
   }
-  return response.json();
+  return normalizeContract(await response.json());
 }
 
 export async function createContractAPI(data: CreateContractData): Promise<Contract> {
@@ -62,7 +65,7 @@ export async function deleteContractAPI(id: number): Promise<any> {
     const errorData = await response.json();
     throw new Error(errorData.message || 'Falha ao excluir contrato');
   }
-  return response.json();
+  return response.status === 204 ? null : response.json();
 }
 
 export async function toggleContractStatusAPI(id: number): Promise<Contract> {
@@ -79,23 +82,12 @@ export async function toggleContractStatusAPI(id: number): Promise<Contract> {
 
 
 export async function fetchEmployeesAPI(): Promise<any[]> {
-  const url = `${API_ENDPOINTS.EMPLOYEE.ALL_EMPLOYEES}?page_size=1000`;
-  const response = await apiClient(url);
-  if (!response.ok) {
-    throw new Error('Falha ao buscar funcionários');
-  }
-  const data = await response.json();
-  return data.results || data;
+  return fetchAllRecords(API_ENDPOINTS.EMPLOYEE.LIST);
 }
 
 export async function fetchBudgetLinesAPI(): Promise<any[]> {
-  const url = `${API_ENDPOINTS.BUDGET_LINE.ALL}?page_size=1000`;
-  const response = await apiClient(url);
-  if (!response.ok) {
-    throw new Error('Falha ao buscar linhas orçamentárias');
-  }
-  const data = await response.json();
-  return data.results || data;
+  const data = await fetchAllRecords(API_ENDPOINTS.BUDGET_LINE.LIST);
+  return data.map(item => ({ ...item, name: budgetLineLabel(item) }));
 }
 
 

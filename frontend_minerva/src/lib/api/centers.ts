@@ -7,7 +7,6 @@ import type {
 
 export type { ManagementCenter, RequestingCenter } from '@/types/entities/center';
 
-
 export async function fetchManagementCentersAPI(params: URLSearchParams): Promise<any> {
   const url = `${API_ENDPOINTS.MANAGEMENT_CENTER.LIST}?${params.toString()}`;
   const res = await apiClient(url);
@@ -15,7 +14,7 @@ export async function fetchManagementCentersAPI(params: URLSearchParams): Promis
     let errorText;
     try {
       errorText = await res.text();
-    } catch (e) {
+    } catch  {
       errorText = "Não foi possível ler a resposta de erro";
     }
 
@@ -64,7 +63,6 @@ export async function deleteManagementCenterAPI(id: number): Promise<any> {
   return res.json();
 }
 
-
 export async function fetchRequestingCentersAPI(params: URLSearchParams): Promise<any> {
   const url = `${API_ENDPOINTS.REQUESTING_CENTER.LIST}?${params.toString()}`;
   const res = await apiClient(url);
@@ -101,7 +99,6 @@ export async function deleteRequestingCenterAPI(id: number): Promise<any> {
   return res.json();
 }
 
-
 export async function fetchManagementCenters(page = 1, pageSize = 10, search = "", ordering = "", statusFilter = "active"): Promise<any> {
   const params = new URLSearchParams({
     page: page.toString(),
@@ -113,6 +110,8 @@ export async function fetchManagementCenters(page = 1, pageSize = 10, search = "
     params.append("is_active", "true");
   } else if (statusFilter === "inactive") {
     params.append("is_active", "false");
+  } else {
+    params.append("is_active", "");
   }
   return fetchManagementCentersAPI(params);
 }
@@ -140,6 +139,8 @@ export async function fetchRequestingCenters(page = 1, pageSize = 10, search = "
     params.append("is_active", "true");
   } else if (statusFilter === "inactive") {
     params.append("is_active", "false");
+  } else {
+    params.append("is_active", "");
   }
   return fetchRequestingCentersAPI(params);
 }

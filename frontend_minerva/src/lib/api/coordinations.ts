@@ -1,3 +1,4 @@
+import { fetchCollection } from './collection';
 import { apiClient } from "./client";
 import { API_ENDPOINTS } from "@/constants/api-endpoints";
 
@@ -5,7 +6,7 @@ export interface Coordination {
   id: number;
   name: string;
   is_active: boolean;
-  management: number;
+  management: number | { id: number; name: string };
   created_at: string;
   updated_at: string;
   created_by?: {
@@ -37,10 +38,7 @@ export async function fetchCoordinations(page = 1, pageSize = 10, search = "", o
   } else if (statusFilter === "inactive") {
     params.append("is_active", "false");
   }
-  const res = await apiClient(`${API_BASE_URL}?${params.toString()}`);
-  if (!res.ok) throw new Error("Erro ao buscar coordenações");
-  const json = await res.json();
-  return json;
+  return fetchCollection(API_BASE_URL, params);
 }
 
 export async function createCoordination(data: { name: string, management_id: number }) {

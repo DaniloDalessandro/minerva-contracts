@@ -65,7 +65,6 @@ export const columns: ColumnDef<BudgetLine>[] = [
     },
   },
 
-
   {
     accessorKey: "management_center.name",
     header: "Centro Gestor",

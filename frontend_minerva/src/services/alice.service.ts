@@ -1,14 +1,4 @@
-import {
-  sendMessageAPI,
-  quickQuestionAPI,
-  getStatsAPI,
-  getSessionsAPI,
-  getSessionDetailAPI,
-  sendMessageToSessionAPI,
-  clearSessionAPI,
-  getAvailableTablesAPI,
-  getDatabaseSchemaAPI,
-} from '@/lib/api/alice';
+import { sendMessageAPI, quickQuestionAPI, getStatsAPI, getSessionsAPI, getSessionDetailAPI, sendMessageToSessionAPI, clearSessionAPI, deleteSessionAPI, getAvailableTablesAPI, getDatabaseSchemaAPI } from '@/lib/api/alice';
 import type {
   ChatMessage,
   ChatResponse,
@@ -40,6 +30,10 @@ export class AliceService {
 
   static async sendMessageToSession(sessionId: number, message: string): Promise<ChatResponse> {
     return sendMessageToSessionAPI(sessionId, message);
+  }
+
+  static async deleteSession(sessionId: number): Promise<void> {
+    return deleteSessionAPI(sessionId);
   }
 
   static async clearSession(sessionId: number): Promise<{ success: boolean; message: string }> {

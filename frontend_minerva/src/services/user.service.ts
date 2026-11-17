@@ -55,8 +55,8 @@ export class InviteService {
   static async fetchInvites(
     page: number = PAGINATION_DEFAULTS.PAGE,
     pageSize: number = PAGINATION_DEFAULTS.PAGE_SIZE,
-    search: string = '',
-    ordering: string = '',
+    _search: string = '',
+    _ordering: string = '',
     statusFilter: string = ''
   ): Promise<InvitesResponse> {
     const params = new URLSearchParams({

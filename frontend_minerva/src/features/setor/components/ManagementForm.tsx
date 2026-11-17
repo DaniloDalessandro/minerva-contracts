@@ -33,7 +33,7 @@ interface ManagementFormProps {
   handleClose: () => void;
   initialData: Management | null;
   onSubmit: (data: ManagementFormData & { id?: number }) => void;
-  existingNames?: string[];
+  existingItems?: Management[];
 }
 
 export default function ManagementForm({
@@ -41,7 +41,7 @@ export default function ManagementForm({
   handleClose,
   initialData,
   onSubmit,
-  existingNames = [],
+  existingItems = [],
 }: ManagementFormProps) {
   const [directions, setDirections] = useState<Direction[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -75,13 +75,13 @@ export default function ManagementForm({
         // ignore
       }
     }
-    loadDirections();
-  }, []);
+    if (open) void loadDirections();
+  }, [open]);
 
   useEffect(() => {
     if (open) {
       if (initialData) {
-        reset({ name: initialData.name, direction_id: initialData.direction || 0 });
+        reset({ name: initialData.name, direction_id: (typeof initialData.direction === "object" ? initialData.direction.id : initialData.direction) || 0 });
       } else {
         reset({ name: "", direction_id: 0 });
       }
@@ -93,8 +93,9 @@ export default function ManagementForm({
       clearErrors("name");
       return;
     }
-    const localDuplicate = existingNames.some(
-      existingName => existingName.toLowerCase() === name.trim().toLowerCase()
+    const localDuplicate = existingItems.some(item =>
+      item.id !== initialData?.id && (typeof item.direction === "object" ? item.direction.id : item.direction) === directionId
+      && item.name.toLowerCase() === name.trim().toLowerCase()
     );
     if (localDuplicate) {
       setError("name", {
@@ -104,7 +105,8 @@ export default function ManagementForm({
     } else {
       clearErrors("name");
     }
-  }, [existingNames, setError, clearErrors]);
+    return localDuplicate;
+  }, [existingItems, initialData, setError, clearErrors]);
 
   useEffect(() => {
     if (!watchedName || watchedDirectionId <= 0) return;
@@ -115,8 +117,7 @@ export default function ManagementForm({
     setIsSubmitting(true);
     clearErrors();
     try {
-      checkDuplicateName(data.name, data.direction_id);
-      if (Object.keys(errors).length > 0) {
+      if (checkDuplicateName(data.name, data.direction_id)) {
         setIsSubmitting(false);
         return;
       }

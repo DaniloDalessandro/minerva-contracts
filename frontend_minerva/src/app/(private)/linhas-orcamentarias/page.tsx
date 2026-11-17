@@ -33,6 +33,8 @@ export default function LinhasOrcamentariasPage() {
       title="Linhas Orçamentárias"
       titleIcon={<ListChecks className="h-8 w-8" />}
       subtitle="Gerenciamento de linhas orçamentárias"
+      editStorageKey="editBudgetLineId"
+      fetchEditItem={BudgetLineService.fetchBudgetLineById}
       FormComponent={BudgetLineForm}
       onViewDetails={handleViewDetails}
       deleteDialogTitle="Confirmar exclusão"

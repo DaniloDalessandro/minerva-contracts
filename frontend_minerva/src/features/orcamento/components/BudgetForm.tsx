@@ -122,12 +122,6 @@ export default function BudgetForm({
     }
     if (!formData.total_amount || parseFloat(formData.total_amount) <= 0)
       newErrors.total_amount = "Valor total deve ser maior que zero";
-    if (initialData) {
-      if (!formData.available_amount || parseFloat(formData.available_amount) < 0)
-        newErrors.available_amount = "Valor disponível não pode ser negativo";
-      if (parseFloat(formData.available_amount) > parseFloat(formData.total_amount))
-        newErrors.available_amount = "Valor disponível não pode ser maior que o total";
-    }
     if (!formData.status) newErrors.status = "Status é obrigatório";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -220,7 +214,7 @@ export default function BudgetForm({
               {initialData && (
                 <div className="grid gap-1">
                   <Label htmlFor="available_amount">Valor Disponível</Label>
-                  <Input id="available_amount" type="number" step="0.01" value={formData.available_amount} onChange={handleChange} placeholder="0.00" min="0" />
+                  <Input id="available_amount" type="number" step="0.01" value={formData.available_amount} readOnly className="bg-muted/40" placeholder="0.00" min="0" />
                   <span className="min-h-[16px] text-xs leading-[16px] text-destructive block">{errors.available_amount}</span>
                 </div>
               )}

@@ -45,7 +45,7 @@ class AidListAPIView(generics.ListAPIView):
             queryset = queryset.filter(
                 Q(employee__full_name__icontains=search) |
                 Q(employee__cpf__icontains=search) |
-                Q(budget_line__name__icontains=search) |
+                Q(budget_line__summary_description__icontains=search) |
                 Q(type__icontains=search) |
                 Q(notes__icontains=search)
             )

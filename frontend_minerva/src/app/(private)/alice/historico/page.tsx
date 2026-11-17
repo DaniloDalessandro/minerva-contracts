@@ -73,7 +73,7 @@ export default function AliceHistoricoPage() {
 
     try {
       setDeletingSessionId(sessionToDelete.id)
-      await AliceService.clearSession(sessionToDelete.id)
+      await AliceService.deleteSession(sessionToDelete.id)
 
       toast({
         title: "Sucesso",

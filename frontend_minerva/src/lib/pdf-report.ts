@@ -1,3 +1,6 @@
+
+import { parseDisplayDate } from "@/lib/date";
+import { getPaymentNatureLabel } from "@/constants/status";
 import jsPDF from "jspdf"
 import autoTable from "jspdf-autotable"
 import type { Auxilio } from "@/types/entities/auxilio"
@@ -27,11 +30,11 @@ const fmtCurrency = (v: string | number) =>
 
 const fmtDate = (d?: string | null) => {
   if (!d) return "—"
-  return new Date(d).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" })
+  return parseDisplayDate(d).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" })
 }
 
 const fmtDateTime = (d: string) =>
-  new Date(d)
+  parseDisplayDate(d)
     .toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })
     .replace(",", "")
 
@@ -307,7 +310,7 @@ export function generateContratoPdf(c: Contract, budgetLine?: BudgetLine) {
   y = kvTable(doc, [
     ["Protocolo",             c.protocol_number],
     ["Status",                c.status === "ATIVO" ? "Ativo" : "Encerrado"],
-    ["Natureza do pagamento", c.payment_nature],
+    ["Natureza do pagamento", getPaymentNatureLabel(c.payment_nature)],
   ], y)
 
   y = sectionTitle(doc, "Fiscais", y)

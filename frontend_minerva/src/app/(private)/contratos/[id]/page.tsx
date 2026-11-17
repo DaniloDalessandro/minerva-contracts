@@ -1,22 +1,25 @@
 "use client"
 
+import { parseDisplayDate } from "@/lib/date";
+
 import React, { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { fetchContractById, Contract } from "@/lib/api/contratos"
 import { fetchBudgetLineById } from "@/lib/api/budgetlines"
 import type { BudgetLine } from "@/types/entities/budget-line"
+import { getPaymentNatureLabel } from "@/constants/status";
+import { usePermissions } from "@/hooks/usePermissions";
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import {
-  ArrowLeft, Edit, Printer,
-  User, DollarSign, Calendar, FileText, Tag, CheckCircle, Users, Building, ExternalLink,
-} from "lucide-react"
+import { ArrowLeft, Edit, Printer, User, Calendar, FileText, Tag, CheckCircle, Users, Building, ExternalLink } from "lucide-react";
 import { generateContratoPdf } from "@/lib/pdf-report"
 import Link from "next/link"
 
 export default function ContractDetailsPage() {
+  const { canManageContratos } = usePermissions()
+
   const params = useParams()
   const router = useRouter()
   const id = params?.id as string
@@ -27,24 +30,23 @@ export default function ContractDetailsPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (id) loadDetails()
-  }, [id])
-
-  const loadDetails = async () => {
-    try {
-      setLoading(true)
-      const c = await fetchContractById(parseInt(id))
-      setContract(c)
-      if (c.budget_line?.id) {
-        const bl = await fetchBudgetLineById(c.budget_line.id).catch(() => null)
-        setBudgetLine(bl)
+    async function loadDetails() {
+      try {
+        setLoading(true)
+        const c = await fetchContractById(parseInt(id))
+        setContract(c)
+        if (c.budget_line?.id) {
+          const bl = await fetchBudgetLineById(c.budget_line.id).catch(() => null)
+          setBudgetLine(bl)
+        }
+      } catch {
+        setError("Erro ao carregar os detalhes do contrato")
+      } finally {
+        setLoading(false)
       }
-    } catch {
-      setError("Erro ao carregar os detalhes do contrato")
-    } finally {
-      setLoading(false)
     }
-  }
+    if (id) void loadDetails()
+  }, [id])
 
   const handleEdit = () => {
     window.sessionStorage.setItem("editContractId", id)
@@ -57,10 +59,10 @@ export default function ContractDetailsPage() {
   }
 
   const fmtDate = (d?: string | null) =>
-    d ? new Date(d).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" }) : "—"
+    d ? parseDisplayDate(d).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" }) : "—"
 
   const fmtDateTime = (d: string) =>
-    new Date(d)
+    parseDisplayDate(d)
       .toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })
       .replace(",", "")
 
@@ -88,7 +90,7 @@ export default function ContractDetailsPage() {
   const currentValue  = parseFloat(contract.current_value)
   const hasValueChanged = originalValue !== currentValue
 
-  const expDate  = contract.expiration_date ? new Date(contract.expiration_date) : null
+  const expDate  = contract.expiration_date ? parseDisplayDate(contract.expiration_date) : null
   const daysDiff = expDate ? Math.ceil((expDate.getTime() - Date.now()) / (1000 * 3600 * 24)) : null
   const isExpired  = daysDiff !== null && daysDiff < 0
   const isExpiring = daysDiff !== null && daysDiff >= 0 && daysDiff <= 30
@@ -132,10 +134,10 @@ export default function ContractDetailsPage() {
               <Printer className="h-3.5 w-3.5 mr-1.5" />
               Gerar PDF
             </Button>
-            <Button size="sm" onClick={handleEdit}>
+            {canManageContratos && (<Button size="sm" onClick={handleEdit}>
               <Edit className="h-3.5 w-3.5 mr-1.5" />
               Editar
-            </Button>
+            </Button>)}
           </div>
         </div>
 
@@ -173,7 +175,7 @@ export default function ContractDetailsPage() {
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-                <InfoField icon={Tag} label="Natureza do Pagamento" value={contract.payment_nature} />
+                <InfoField icon={Tag} label="Natureza do Pagamento" value={getPaymentNatureLabel(contract.payment_nature)} />
                 <InfoField icon={Calendar} label="Assinatura" value={fmtDate(contract.signing_date)} />
                 <InfoField icon={Calendar} label="Início" value={fmtDate(contract.start_date)} />
                 <InfoField icon={Calendar} label="Término" value={fmtDate(contract.end_date)} />

@@ -10,12 +10,12 @@ class BudgetLineDetailSerializer(serializers.ModelSerializer):
 
     management_center_name = serializers.CharField(source='management_center.name', read_only=True)
     requesting_center_name = serializers.CharField(source='requesting_center.name', read_only=True)
-    main_fiscal_name = serializers.CharField(source='main_fiscal.name', read_only=True)
-    secondary_fiscal_name = serializers.CharField(source='secondary_fiscal.name', read_only=True)
+    main_fiscal_name = serializers.CharField(source='main_fiscal.full_name', read_only=True)
+    secondary_fiscal_name = serializers.CharField(source='secondary_fiscal.full_name', read_only=True)
 
 
-    created_by_name = serializers.CharField(source='created_by.username', read_only=True)
-    updated_by_name = serializers.CharField(source='updated_by.username', read_only=True)
+    created_by_name = serializers.CharField(source='created_by.email', read_only=True)
+    updated_by_name = serializers.CharField(source='updated_by.email', read_only=True)
 
 
     budget_info = serializers.SerializerMethodField()
@@ -65,9 +65,17 @@ class BudgetLineSerializer(serializers.ModelSerializer):
     """
     Serializer básico para BudgetLine para uso em listagens
     """
+    created_by = UserInfoSerializer(read_only=True)
+    updated_by = UserInfoSerializer(read_only=True)
     management_center_name = serializers.CharField(source='management_center.name', read_only=True)
     requesting_center_name = serializers.CharField(source='requesting_center.name', read_only=True)
     main_fiscal_name = serializers.CharField(source='main_fiscal.full_name', read_only=True)
+
+    secondary_fiscal_name = serializers.CharField(source='secondary_fiscal.full_name', read_only=True)
+    budget_info = serializers.SerializerMethodField()
+
+    def get_budget_info(self, obj):
+        return {'id': obj.budget_id, 'year': obj.budget.year, 'category': obj.budget.category}
 
     class Meta:
         model = BudgetLine
@@ -75,7 +83,8 @@ class BudgetLineSerializer(serializers.ModelSerializer):
             'id', 'budget', 'category', 'expense_type', 'management_center', 'requesting_center',
             'summary_description', 'object', 'budget_classification', 'budgeted_amount',
             'process_status', 'contract_status', 'status', 'main_fiscal', 'created_at', 'updated_at',
-            'management_center_name', 'requesting_center_name', 'main_fiscal_name'
+            'management_center_name', 'requesting_center_name', 'main_fiscal_name',
+            'secondary_fiscal', 'contract_type', 'probable_procurement_type', 'contract_notes', 'budget_info', 'secondary_fiscal_name', 'created_by', 'updated_by'
         ]
         read_only_fields = ['created_by', 'updated_by', 'created_at', 'updated_at']
 
@@ -89,11 +98,11 @@ class BudgetLineMovementSerializer(serializers.ModelSerializer):
 
 
 class BudgetLineVersionSerializer(serializers.ModelSerializer):
-    created_by_name = serializers.CharField(source='created_by.username', read_only=True)
+    created_by_name = serializers.CharField(source='created_by.email', read_only=True)
     management_center_name = serializers.CharField(source='management_center.name', read_only=True)
     requesting_center_name = serializers.CharField(source='requesting_center.name', read_only=True)
-    main_fiscal_name = serializers.CharField(source='main_fiscal.name', read_only=True)
-    secondary_fiscal_name = serializers.CharField(source='secondary_fiscal.name', read_only=True)
+    main_fiscal_name = serializers.CharField(source='main_fiscal.full_name', read_only=True)
+    secondary_fiscal_name = serializers.CharField(source='secondary_fiscal.full_name', read_only=True)
 
     class Meta:
         model = BudgetLineVersion

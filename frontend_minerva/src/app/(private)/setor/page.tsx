@@ -21,11 +21,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export default function SetoresPage() {
   const { canManageSetor } = usePermissions()
 
-
   const [directionsForForm, setDirectionsForForm] = useState<Direction[]>([]);
   const [managementsForForm, setManagementsForForm] = useState<Management[]>([]);
   const [coordinationsForForm, setCoordinationsForForm] = useState<Coordination[]>([]);
-
 
   const directionServiceAdapter = {
     fetch: SetorService.fetchDirections,
@@ -48,16 +46,13 @@ export default function SetoresPage() {
     delete: SetorService.deleteCoordination,
   };
 
-
   const handleDirectionsLoaded = useCallback((items: Direction[]) => {
     setDirectionsForForm(items);
   }, []);
 
-
   const handleManagementsLoaded = useCallback((items: Management[]) => {
     setManagementsForForm(items);
   }, []);
-
 
   const handleCoordinationsLoaded = useCallback((items: Coordination[]) => {
     setCoordinationsForForm(items);
@@ -151,7 +146,7 @@ export default function SetoresPage() {
             titleIcon={<Briefcase className="h-8 w-8" />}
             FormComponent={ManagementForm}
             formProps={{
-              existingNames: managementsForForm.map((m) => m.name),
+              existingItems: managementsForForm,
             }}
             onLoadSuccess={handleManagementsLoaded}
             initialStatusFilter=""
@@ -182,7 +177,7 @@ export default function SetoresPage() {
             titleIcon={<GitBranch className="h-8 w-8" />}
             FormComponent={CoordinationForm}
             formProps={{
-              existingNames: coordinationsForForm.map((c) => c.name),
+              existingItems: coordinationsForForm,
             }}
             onLoadSuccess={handleCoordinationsLoaded}
             initialStatusFilter=""
