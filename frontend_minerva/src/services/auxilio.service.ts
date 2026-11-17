@@ -35,58 +35,33 @@ export class AuxilioService {
       params.append('status', status);
     }
 
-    console.log("💰 Buscando auxílios:", params.toString(), status ? `(filtro: ${status})` : "(sem filtro - todos)");
-
-    const data = await fetchAuxiliosAPI(params);
-    console.log("📊 Auxílios recebidos:", {
-      count: data.count,
-      results: data.results?.length || 0,
-    });
-
-    return data;
+    return fetchAuxiliosAPI(params);
   }
 
   static async fetchAuxilioById(id: number): Promise<Auxilio> {
-    console.log("💰 Buscando auxílio por ID:", id);
-    const data = await fetchAuxilioByIdAPI(id);
-    console.log("✅ Auxílio encontrado:", data.type);
-    return data;
+    return fetchAuxilioByIdAPI(id);
   }
 
   static async createAuxilio(data: CreateAuxilioData): Promise<Auxilio> {
-    console.log("➕ Criando novo auxílio:", data.type);
-    const result = await createAuxilioAPI(data);
-    console.log("✅ Auxílio criado com sucesso:", result.id);
-    return result;
+    return createAuxilioAPI(data);
   }
 
   static async updateAuxilio(data: CreateAuxilioData): Promise<Auxilio> {
-    console.log("✏️ Atualizando auxílio:", data.id);
-    const result = await updateAuxilioAPI(data);
-    console.log("✅ Auxílio atualizado com sucesso");
-    return result;
+    return updateAuxilioAPI(data);
   }
 
   static async deleteAuxilio(id: number): Promise<void> {
-    console.log("🗑️ Deletando auxílio:", id);
     await deleteAuxilioAPI(id);
-    console.log("✅ Auxílio deletado com sucesso");
+
   }
 
   static async fetchColaboradores(): Promise<any[]> {
-    console.log("👥 Buscando colaboradores para dropdown");
-    const data = await fetchColaboradoresForDropdownAPI();
-    console.log("📊 Colaboradores encontrados:", data.length);
-    return data;
+    return fetchColaboradoresForDropdownAPI();
   }
 
   static async fetchBudgetLines(): Promise<any[]> {
-    console.log("💰 Buscando linhas orçamentárias para dropdown");
-    const data = await fetchBudgetLinesForDropdownAPI();
-    console.log("📊 Linhas orçamentárias encontradas:", data.length);
-    return data;
+    return fetchBudgetLinesForDropdownAPI();
   }
-
 
   static async getAuxilios(): Promise<AuxiliosResponse> {
     return this.fetchAuxilios();

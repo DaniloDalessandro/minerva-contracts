@@ -1,0 +1,8 @@
+# Local UI validation: record test emails in container logs.
+services:
+  backend:
+    environment:
+      EMAIL_BACKEND: django.core.mail.backends.console.EmailBackend
+  celery:
+    environment:
+      EMAIL_BACKEND: django.core.mail.backends.console.EmailBackend

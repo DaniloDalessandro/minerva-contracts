@@ -33,6 +33,8 @@ export default function AuxiliosPage() {
       title="Auxílios"
       titleIcon={<HandCoins className="h-8 w-8" />}
       subtitle="Gerenciamento de auxílios educacionais e benefícios"
+      editStorageKey="editAuxilioId"
+      fetchEditItem={AuxilioService.fetchAuxilioById}
       FormComponent={AuxilioForm}
       onViewDetails={handleViewDetails}
       deleteDialogTitle="Confirmar exclusão"

@@ -1,3 +1,5 @@
+
+import { parseDisplayDate } from "@/lib/date";
 import { ColumnDef } from "@tanstack/react-table";
 import { Colaborador } from "@/lib/api/colaboradores";
 import { STATUS_FILTER_OPTIONS, getStatusLabel } from "@/constants/status";
@@ -116,7 +118,7 @@ export const columns: ColumnDef<Colaborador>[] = [
     cell: ({ row }) => {
       const date = row.original.created_at;
       if (!date) return <span>-</span>;
-      return <span>{new Date(date).toLocaleDateString('pt-BR')}</span>;
+      return <span>{parseDisplayDate(date).toLocaleDateString('pt-BR')}</span>;
     },
   },
   {
@@ -138,7 +140,7 @@ export const columns: ColumnDef<Colaborador>[] = [
     cell: ({ row }) => {
       const date = row.original.updated_at;
       if (!date) return <span>-</span>;
-      return <span>{new Date(date).toLocaleDateString('pt-BR')}</span>;
+      return <span>{parseDisplayDate(date).toLocaleDateString('pt-BR')}</span>;
     },
   },
 ];

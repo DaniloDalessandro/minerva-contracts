@@ -104,7 +104,7 @@ export function ShareModal({ open, onClose, resourceType, resourceId, resourceNa
       setPermission('VIEW')
       setMessage('')
     }
-  }, [open])
+  }, [open, resourceType, resourceId, resourceName, hasResourceFromProps])
 
   const handleTypeChange = (type: ResourceType) => {
     setSelectedType(type)

@@ -38,6 +38,7 @@ interface Budget {
 interface Center {
   id: number;
   name: string;
+  management_center?: number | { id: number };
 }
 
 interface Employee {
@@ -168,6 +169,7 @@ export default function BudgetLineForm({
     setFormData({
       ...formData,
       [field]: idFields.includes(field) ? (value === "" ? null : parseInt(value)) : value,
+      ...(field === "management_center" ? { requesting_center: 0 } : {}),
     });
     if (errors[field]) setErrors({ ...errors, [field]: "" });
   };
@@ -346,7 +348,10 @@ export default function BudgetLineForm({
                         <SelectValue placeholder={loadingData ? "Carregando centros..." : "Selecione um centro solicitante"} />
                       </SelectTrigger>
                       <SelectContent>
-                        {requestingCenters.map((c) => (
+                        {requestingCenters.filter(c => {
+                          const parent = typeof c.management_center === "object" ? c.management_center.id : c.management_center;
+                          return parent === formData.management_center;
+                        }).map((c) => (
                           <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
                         ))}
                       </SelectContent>

@@ -31,7 +31,8 @@ export default function ForgotPasswordPage() {
       if (response.ok) {
         setSuccess(true)
       } else {
-        setError(data.error || "Erro ao solicitar redefinição de senha")
+        const message = data.error || data.email?.[0] || data.detail
+        setError(typeof message === "string" ? message : "Erro ao solicitar redefinição de senha")
       }
     } catch {
       setError("Erro ao conectar com o servidor")
@@ -112,7 +113,6 @@ export default function ForgotPasswordPage() {
         <p className="text-muted-foreground mt-2 text-sm">Sistema de Gestão de Contratos</p>
       </div>
 
-
       <div className="glass rounded-2xl p-8 animate-fade-in-scale" style={{ animationDelay: "0.1s" }}>
         <div className="mb-6">
           <h2 className="text-xl font-semibold text-foreground">Recuperação de Senha</h2>
@@ -166,7 +166,6 @@ export default function ForgotPasswordPage() {
           </Button>
         </form>
       </div>
-
 
       <div className="text-center mt-5 animate-fade-in" style={{ animationDelay: "0.2s" }}>
         <Link

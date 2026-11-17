@@ -19,7 +19,7 @@ export interface Management {
   id: number;
   name: string;
   is_active: boolean;
-  direction: number;
+  direction: number | { id: number; name: string };
   created_at: string;
   updated_at: string;
   created_by?: SetorUserEmailRef;
@@ -31,7 +31,7 @@ export interface Coordination {
   id: number;
   name: string;
   is_active: boolean;
-  management: number;
+  management: number | { id: number; name: string };
   created_at: string;
   updated_at: string;
   created_by?: SetorUserEmailRef;

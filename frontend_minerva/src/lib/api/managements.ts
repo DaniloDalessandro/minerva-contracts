@@ -1,3 +1,4 @@
+import { fetchCollection } from './collection';
 import { apiClient } from "./client";
 import { API_ENDPOINTS } from "@/constants/api-endpoints";
 
@@ -5,7 +6,7 @@ export interface Management {
   id: number;
   name: string;
   is_active: boolean;
-  direction: number;
+  direction: number | { id: number; name: string };
   created_at: string;
   updated_at: string;
   created_by?: {
@@ -56,15 +57,8 @@ export async function fetchManagements(page = 1, pageSize = 10, search = "", ord
 
   }
 
-  const url = `${API_BASE_URL}?${params.toString()}`;
 
-  const res = await apiClient(url);
-
-  if (!res.ok) throw new Error(`Erro ao buscar gerências: ${res.status}`);
-
-  const json = await res.json();
-
-  return json;
+  return fetchCollection(API_BASE_URL, params);
 }
 
 export async function createManagement(data: { name: string, direction_id: number }) {

@@ -39,7 +39,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
         login({ access: data.access, refresh: data.refresh, user: data.user })
         router.push("/dashboard")
       } else {
-        setError(data?.detail || data?.non_field_errors?.[0] || "Credenciais inválidas")
+        setError(response.status === 401 ? "E-mail ou senha inválidos." : data?.detail || data?.non_field_errors?.[0] || "Credenciais inválidas")
       }
     } catch {
       setError("Erro de conexão com o servidor. Tente novamente.")

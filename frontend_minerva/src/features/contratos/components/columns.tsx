@@ -1,3 +1,5 @@
+
+import { parseDisplayDate } from "@/lib/date";
 import { ColumnDef } from "@tanstack/react-table";
 import { Contract } from "@/lib/api/contratos";
 import {
@@ -145,7 +147,7 @@ export const columns: ColumnDef<Contract>[] = [
 
       return (
         <span>
-          {new Date(startDate).toLocaleDateString("pt-BR", {
+          {parseDisplayDate(startDate).toLocaleDateString("pt-BR", {
             day: "2-digit",
             month: "2-digit",
             year: "numeric",
@@ -165,7 +167,7 @@ export const columns: ColumnDef<Contract>[] = [
 
       return (
         <span>
-          {new Date(endDate).toLocaleDateString("pt-BR", {
+          {parseDisplayDate(endDate).toLocaleDateString("pt-BR", {
             day: "2-digit",
             month: "2-digit",
             year: "numeric",
@@ -185,7 +187,7 @@ export const columns: ColumnDef<Contract>[] = [
 
       return (
         <span>
-          {new Date(expirationDate).toLocaleDateString("pt-BR", {
+          {parseDisplayDate(expirationDate).toLocaleDateString("pt-BR", {
             day: "2-digit",
             month: "2-digit",
             year: "numeric",
@@ -237,7 +239,7 @@ export const columns: ColumnDef<Contract>[] = [
 
       return (
         <span>
-          {new Date(signingDate).toLocaleDateString("pt-BR", {
+          {parseDisplayDate(signingDate).toLocaleDateString("pt-BR", {
             day: "2-digit",
             month: "2-digit",
             year: "numeric",
@@ -293,7 +295,7 @@ export const columns: ColumnDef<Contract>[] = [
     enableHiding: true,
     cell: ({ row }) => (
       <span>
-        {new Date(row.original.created_at).toLocaleString("pt-BR", {
+        {parseDisplayDate(row.original.created_at).toLocaleString("pt-BR", {
           day: "2-digit",
           month: "2-digit",
           year: "numeric",
@@ -329,7 +331,7 @@ export const columns: ColumnDef<Contract>[] = [
     enableHiding: true,
     cell: ({ row }) => (
       <span>
-        {new Date(row.original.updated_at).toLocaleString("pt-BR", {
+        {parseDisplayDate(row.original.updated_at).toLocaleString("pt-BR", {
           day: "2-digit",
           month: "2-digit",
           year: "numeric",

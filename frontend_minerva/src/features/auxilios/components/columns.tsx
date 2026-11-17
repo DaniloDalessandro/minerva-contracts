@@ -1,3 +1,5 @@
+
+import { parseDisplayDate } from "@/lib/date";
 import { ColumnDef } from "@tanstack/react-table";
 import { Auxilio } from "@/lib/api/auxilios";
 import {
@@ -100,7 +102,7 @@ export const columns: ColumnDef<Auxilio>[] = [
       if (!startDate) return <span>-</span>;
       return (
         <span>
-          {new Date(startDate).toLocaleDateString("pt-BR", {
+          {parseDisplayDate(startDate).toLocaleDateString("pt-BR", {
             day: "2-digit",
             month: "2-digit",
             year: "numeric",
@@ -119,7 +121,7 @@ export const columns: ColumnDef<Auxilio>[] = [
       if (!endDate) return <span>-</span>;
       return (
         <span>
-          {new Date(endDate).toLocaleDateString("pt-BR", {
+          {parseDisplayDate(endDate).toLocaleDateString("pt-BR", {
             day: "2-digit",
             month: "2-digit",
             year: "numeric",
@@ -193,7 +195,7 @@ export const columns: ColumnDef<Auxilio>[] = [
     enableHiding: true,
     cell: ({ row }) => (
       <span>
-        {new Date(row.original.created_at).toLocaleString("pt-BR", {
+        {parseDisplayDate(row.original.created_at).toLocaleString("pt-BR", {
           day: "2-digit",
           month: "2-digit",
           year: "numeric",
@@ -229,7 +231,7 @@ export const columns: ColumnDef<Auxilio>[] = [
     enableHiding: true,
     cell: ({ row }) => (
       <span>
-        {new Date(row.original.updated_at).toLocaleString("pt-BR", {
+        {parseDisplayDate(row.original.updated_at).toLocaleString("pt-BR", {
           day: "2-digit",
           month: "2-digit",
           year: "numeric",

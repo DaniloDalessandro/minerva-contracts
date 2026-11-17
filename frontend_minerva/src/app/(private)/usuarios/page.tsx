@@ -19,8 +19,6 @@ import {
 } from "@/features/usuarios"
 import { type AdminUser, type UserInvitation } from "@/lib/api/users"
 
-
-
 const userServiceAdapter = {
   fetch: UserService.fetchUsers,
   create: UserService.createUser,
@@ -32,8 +30,6 @@ const inviteServiceAdapter = {
   fetch: InviteService.fetchInvites,
   create: InviteService.createInvite,
 }
-
-
 
 function InvitesSection({ autoOpenForm }: { autoOpenForm: boolean }) {
   const {
@@ -132,8 +128,6 @@ function InvitesSection({ autoOpenForm }: { autoOpenForm: boolean }) {
     </div>
   )
 }
-
-
 
 function UsuariosPageContent() {
   const { user } = useAuthContext()

@@ -1,5 +1,7 @@
 "use client"
 
+import { parseDisplayDate } from "@/lib/date";
+
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
 import { fetchBudgetById, Budget, createBudgetMovement, CreateBudgetMovementData, fetchBudgets, getBudgetMovementsByBudget } from "@/lib/api/budgets"
@@ -9,7 +11,7 @@ import { generateOrcamentoPdf } from "@/lib/pdf-report"
 import { BudgetLineForm } from "@/features/orcamento"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { CalendarIcon, DollarSignIcon, BuildingIcon, UserIcon, ArrowLeftRightIcon, InfoIcon, TagIcon, CheckCircleIcon, FileTextIcon, PrinterIcon } from "lucide-react"
+import { CalendarIcon, DollarSignIcon, BuildingIcon, UserIcon, InfoIcon, TagIcon, CheckCircleIcon, PrinterIcon } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,13 +22,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { usePermissions } from "@/hooks/usePermissions";
 import { Button } from "@/components/ui/button"
-import { useRouter } from "next/navigation"
+
 import { BudgetMovementHistory, BudgetMovementForm, BudgetLines } from "@/features/orcamento"
 
 export default function BudgetDetailsPage() {
+  const { canManageOrcamento, canManageLinhas } = usePermissions()
   const params = useParams()
-  const router = useRouter()
+
   const budgetId = Number(params.id)
 
   const [budget, setBudget] = useState<Budget | null>(null)
@@ -57,7 +61,7 @@ export default function BudgetDetailsPage() {
 
         const [budgetData, budgetsData] = await Promise.all([
           fetchBudgetById(budgetId),
-          fetchBudgets()
+          fetchBudgets(1, 1000)
         ])
         setBudget(budgetData)
         setBudgets(budgetsData.results || budgetsData)
@@ -82,7 +86,7 @@ export default function BudgetDetailsPage() {
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString("pt-BR", {
+    return parseDisplayDate(dateString).toLocaleString("pt-BR", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
@@ -407,8 +411,10 @@ export default function BudgetDetailsPage() {
 
 
         <BudgetMovementHistory
+          refreshKey={budget.updated_at}
           budgetId={budget.id}
-          onNewMovement={handleNewMovement}
+          readOnly={!canManageOrcamento}
+          onNewMovement={canManageOrcamento ? handleNewMovement : undefined}
           onMovementChange={async () => {
 
             const updatedBudget = await fetchBudgetById(budgetId)
@@ -421,15 +427,9 @@ export default function BudgetDetailsPage() {
           <BudgetLines
             budgetLines={budget.budget_lines}
             budgetLinesSummary={budget.budget_lines_summary}
-            onCreateNewBudgetLine={handleCreateNewBudgetLine}
-            onEditBudgetLine={handleEditBudgetLine}
-            onDeleteBudgetLine={handleDeleteBudgetLine}
-            budgetInfo={{
-              name: `${budget.category}-${budget.year}`,
-              year: budget.year,
-              category: budget.category,
-              totalAmount: budget.total_amount
-            }}
+            onCreateNewBudgetLine={canManageLinhas ? handleCreateNewBudgetLine : undefined}
+            onEditBudgetLine={canManageLinhas ? handleEditBudgetLine : undefined}
+            onDeleteBudgetLine={canManageLinhas ? handleDeleteBudgetLine : undefined}
           />
         )}
       </div>

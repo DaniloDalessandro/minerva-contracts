@@ -91,6 +91,9 @@ class RegistrationRateThrottle(AnonRateThrottle):
 class PasswordResetRateThrottle(AnonRateThrottle):
     scope = 'password_reset'
 
+class PasswordResetConfirmRateThrottle(AnonRateThrottle):
+    scope = 'password_reset_confirm'
+
 
 @extend_schema(tags=['Auth'])
 class LoginView(APIView):
@@ -193,48 +196,38 @@ class PasswordResetView(APIView):
 
     def post(self, request):
         serializer = PasswordResetSerializer(data=request.data)
-        if serializer.is_valid():
-            email = serializer.validated_data['email']
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
+        user = User.objects.filter(email__iexact=email, is_active=True).first()
+        if user:
+            token = default_token_generator.make_token(user)
+            uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+            reset_link = f"{settings.FRONTEND_URL.rstrip('/')}/reset-password/{uidb64}/{token}/"
             try:
-                user = User.objects.get(email=email)
-
-
-                token = default_token_generator.make_token(user)
-                uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
-
-
-                reset_link = f"{getattr(settings, 'FRONTEND_URL', 'http://localhost:3000')}/reset-password/{uidb64}/{token}/"
-
-
-                try:
-                    send_mail(
-                        'Redefinição de Senha - Sistema Minerva',
-                        f'Olá,\n\nPara redefinir sua senha, clique no link abaixo:\n{reset_link}\n\nEste link expira em 24 horas.\n\nSe você não solicitou esta redefinição, ignore este email.',
-                        settings.DEFAULT_FROM_EMAIL,
-                        [email],
-                        fail_silently=False,
-                    )
-                    return Response({'message': PASSWORD_RESET_MESSAGES['email_sent']})
-                except Exception as e:
-                    return Response({'error': 'Erro ao enviar email. Tente novamente.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-            except User.DoesNotExist:
-
-                return Response({'message': PASSWORD_RESET_MESSAGES['email_sent']})
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                sent = send_mail(
+                    'Redefinição de Senha - Sistema Minerva',
+                    f'Olá,\n\nPara redefinir sua senha, clique no link abaixo:\n{reset_link}\n\nEste link expira em 24 horas.\n\nSe você não solicitou esta redefinição, ignore este email.',
+                    settings.DEFAULT_FROM_EMAIL, [user.email], fail_silently=False,
+                )
+                if not sent:
+                    raise RuntimeError('O servidor de e-mail não confirmou o envio.')
+            except Exception:
+                logger.exception('Falha ao enviar e-mail de recuperação de senha.')
+                return Response({'error': 'Erro ao enviar email. Tente novamente.'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        return Response({'message': PASSWORD_RESET_MESSAGES['email_sent']})
 
 
 @extend_schema(tags=['Auth'])
 class PasswordResetConfirmView(APIView):
     permission_classes = [AllowAny]
-    throttle_classes = [PasswordResetRateThrottle]
+    throttle_classes = [PasswordResetConfirmRateThrottle]
 
     def post(self, request):
         serializer = PasswordResetConfirmSerializer(data=request.data)
         if serializer.is_valid():
             try:
                 uid = force_str(urlsafe_base64_decode(serializer.validated_data['uidb64']))
-                user = User.objects.get(pk=uid)
+                user = User.objects.get(pk=uid, is_active=True)
 
                 if default_token_generator.check_token(user, serializer.validated_data['token']):
                     user.set_password(serializer.validated_data['password'])

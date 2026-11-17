@@ -32,6 +32,8 @@ class EmployeeWriteSerializer(serializers.ModelSerializer):
         model = Employee
         fields = [
             'id', 'full_name', 'cpf', 'email', 'phone', 'admission_date',
+            'employee_id', 'position', 'birth_date', 'department', 'street', 'city', 'state',
+            'postal_code', 'bank_name', 'bank_agency', 'bank_account',
             'direction', 'management', 'coordination', 'status',
             'created_at', 'updated_at', 'created_by', 'updated_by'
         ]
@@ -48,6 +50,8 @@ class EmployeeSerializer(serializers.ModelSerializer):
         model = Employee
         fields = [
             'id', 'full_name', 'cpf', 'email', 'phone', 'admission_date',
+            'employee_id', 'position', 'birth_date', 'department', 'street', 'city', 'state',
+            'postal_code', 'bank_name', 'bank_agency', 'bank_account',
             'direction', 'management', 'coordination', 'status',
             'created_at', 'updated_at', 'created_by', 'updated_by'
         ]

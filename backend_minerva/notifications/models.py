@@ -50,3 +50,16 @@ class ContractNotification(models.Model):
 
     def __str__(self):
         return f"{self.contract.protocol_number} — {self.get_notification_type_display()} ({self.cycle_month})"
+
+
+class ContractNotificationRead(models.Model):
+    notification = models.ForeignKey(ContractNotification, on_delete=models.CASCADE, related_name='reads')
+    user = models.ForeignKey('accounts.User', on_delete=models.CASCADE, related_name='contract_notification_reads')
+    read_at = models.DateTimeField(default=timezone.now)
+    criado_em = models.DateTimeField(auto_now_add=True)
+    criado_por = models.ForeignKey('accounts.User', on_delete=models.SET_NULL, null=True, related_name='+')
+    atualizado_em = models.DateTimeField(auto_now=True)
+    atualizado_por = models.ForeignKey('accounts.User', on_delete=models.SET_NULL, null=True, related_name='+')
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['notification', 'user'], name='unique_contract_notification_read')]

@@ -95,21 +95,29 @@ export function getContractStatusLabel(status: string): string {
 
 export function getPaymentNatureLabel(nature: string): string {
   switch (nature) {
-    case "PAGAMENTO ÚNICO":
+    case "UNICO":
+      case "PAGAMENTO ÚNICO":
       return "Único";
-    case "PAGAMENTO ANUAL":
+    case "ANUAL":
+      case "PAGAMENTO ANUAL":
       return "Anual";
-    case "PAGAMENTO SEMANAL":
+    case "SEMANAL":
+      case "PAGAMENTO SEMANAL":
       return "Semanal";
-    case "PAGAMENTO MENSAL":
+    case "MENSAL":
+      case "PAGAMENTO MENSAL":
       return "Mensal";
-    case "PAGAMENTO QUINZENAL":
+    case "QUINZENAL":
+      case "PAGAMENTO QUINZENAL":
       return "Quinzenal";
-    case "PAGAMENTO TRIMESTRAL":
+    case "TRIMESTRAL":
+      case "PAGAMENTO TRIMESTRAL":
       return "Trimestral";
-    case "PAGAMENTO SEMESTRAL":
+    case "SEMESTRAL":
+      case "PAGAMENTO SEMESTRAL":
       return "Semestral";
-    case "PAGAMENTO SOB DEMANDA":
+    case "SOB_DEMANDA":
+      case "PAGAMENTO SOB DEMANDA":
       return "Sob Demanda";
     default:
       return nature;

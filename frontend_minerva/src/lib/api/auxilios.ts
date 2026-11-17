@@ -1,3 +1,5 @@
+import { fetchAllRecords } from './collection';
+import { budgetLineLabel, normalizeAid } from './normalizers';
 import { apiClient } from './client';
 import { API_ENDPOINTS } from '@/constants/api-endpoints';
 import type {
@@ -15,7 +17,8 @@ export async function fetchAuxiliosAPI(params: URLSearchParams): Promise<Auxilio
   if (!response.ok) {
     throw new Error('Falha ao buscar auxílios');
   }
-  return response.json();
+  const data = await response.json();
+  return { ...data, results: data.results.map(normalizeAid) };
 }
 
 export async function fetchAuxilioByIdAPI(id: number): Promise<Auxilio> {
@@ -24,14 +27,14 @@ export async function fetchAuxilioByIdAPI(id: number): Promise<Auxilio> {
   if (!response.ok) {
     throw new Error('Falha ao buscar auxílio');
   }
-  return response.json();
+  return normalizeAid(await response.json());
 }
 
 export async function createAuxilioAPI(data: CreateAuxilioData): Promise<Auxilio> {
   const url = API_ENDPOINTS.AID.CREATE;
   const response = await apiClient(url, {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: JSON.stringify({ ...data, employee_id: data.employee, budget_line_id: data.budget_line }),
   });
   if (!response.ok) {
     const errorData = await response.json();
@@ -44,7 +47,7 @@ export async function updateAuxilioAPI(data: CreateAuxilioData): Promise<Auxilio
   const url = API_ENDPOINTS.AID.UPDATE(data.id!);
   const response = await apiClient(url, {
     method: 'PUT',
-    body: JSON.stringify(data),
+    body: JSON.stringify({ ...data, employee_id: data.employee, budget_line_id: data.budget_line }),
   });
   if (!response.ok) {
     const errorData = await response.json();
@@ -62,28 +65,17 @@ export async function deleteAuxilioAPI(id: number): Promise<any> {
     const errorData = await response.json();
     throw new Error(errorData.message || 'Falha ao excluir auxílio');
   }
-  return response.json();
+  return response.status === 204 ? null : response.json();
 }
 
 
 export async function fetchColaboradoresForDropdownAPI(): Promise<any[]> {
-  const url = `${API_ENDPOINTS.EMPLOYEE.ALL_EMPLOYEES}?page_size=1000`;
-  const response = await apiClient(url);
-  if (!response.ok) {
-    throw new Error('Falha ao buscar colaboradores');
-  }
-  const data = await response.json();
-  return data.results || data;
+  return fetchAllRecords(API_ENDPOINTS.EMPLOYEE.LIST);
 }
 
 export async function fetchBudgetLinesForDropdownAPI(): Promise<any[]> {
-  const url = `${API_ENDPOINTS.BUDGET_LINE.ALL}?page_size=1000`;
-  const response = await apiClient(url);
-  if (!response.ok) {
-    throw new Error('Falha ao buscar linhas orçamentárias');
-  }
-  const data = await response.json();
-  return data.results || data;
+  const data = await fetchAllRecords(API_ENDPOINTS.BUDGET_LINE.LIST);
+  return data.map(item => ({ ...item, name: budgetLineLabel(item) }));
 }
 
 

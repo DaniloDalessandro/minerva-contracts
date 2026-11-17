@@ -6,6 +6,11 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci
 
+FROM deps AS development
+COPY . .
+EXPOSE 3000
+CMD ["npm", "run", "dev", "--", "--hostname", "0.0.0.0"]
+
 FROM base AS builder
 WORKDIR /app
 ARG NEXT_PUBLIC_API_URL=http://localhost:8000

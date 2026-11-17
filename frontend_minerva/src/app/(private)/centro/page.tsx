@@ -18,13 +18,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export default function CentrosPage() {
   const { canManageCentro } = usePermissions()
 
-
-  const [activeTab, setActiveTab] = useState("management-centers");
-
-
   const [managementCentersForForm, setManagementCentersForForm] = useState<ManagementCenter[]>([]);
   const [requestingCentersForForm, setRequestingCentersForForm] = useState<RequestingCenter[]>([]);
-
 
   const managementCenterServiceAdapter = {
     fetch: CenterService.fetchManagementCenters,
@@ -39,7 +34,6 @@ export default function CentrosPage() {
     update: CenterService.updateRequestingCenter,
     delete: CenterService.deleteRequestingCenter,
   };
-
 
   const handleManagementCentersLoaded = useCallback((items: ManagementCenter[]) => {
     setManagementCentersForForm(items);
@@ -61,7 +55,6 @@ export default function CentrosPage() {
       <Tabs
         defaultValue="management-centers"
         className="w-full"
-        onValueChange={setActiveTab}
       >
         <TabsList className="grid w-full grid-cols-2 gap-2 bg-muted p-1 h-auto">
           <TabsTrigger
@@ -129,8 +122,7 @@ export default function CentrosPage() {
             subtitle="Gerenciamento de centros solicitantes"
             FormComponent={RequestingCenterForm}
             formProps={{
-              existingNames: requestingCentersForForm
-                .map((c) => c.name),
+              existingCenters: requestingCentersForForm,
             }}
             onLoadSuccess={handleRequestingCentersLoaded}
             deleteDialogTitle="Confirmar inativação"

@@ -1,7 +1,7 @@
 "use client"
 
 import { Suspense } from "react"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation";
 import { Wallet, Landmark, FileText, Share2 } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
@@ -11,6 +11,7 @@ const VALID_TABS = ["budgets", "budget-lines", "contracts"] as const
 
 function ConvitesPageContent() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const tabParam = searchParams.get("tab")
   const activeTab = VALID_TABS.includes(tabParam as any) ? tabParam! : "budgets"
 
@@ -30,7 +31,7 @@ function ConvitesPageContent() {
       </div>
 
       <CardContent className="pt-4">
-        <Tabs value={activeTab} className="space-y-4">
+        <Tabs value={activeTab} onValueChange={value => router.replace(`/convites?tab=${value}`, { scroll: false })} className="space-y-4">
           <TabsList>
             <TabsTrigger value="budgets" className="gap-2">
               <Wallet className="h-4 w-4" />

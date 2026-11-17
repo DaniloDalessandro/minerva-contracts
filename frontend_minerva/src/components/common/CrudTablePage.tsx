@@ -1,7 +1,9 @@
 "use client";
 
 import React from "react";
-import { DataTable } from "@/components/ui/data-table";
+import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
+import { DataTable, type DataTableProps } from "@/components/ui/data-table";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,7 +17,14 @@ import {
 import { useCrudTable, CrudService, STATUS_FILTER_ALL } from "@/hooks/useCrudTable";
 import { useRegisterRefresh } from "@/context";
 
+export type CrudListProps<T> = Omit<DataTableProps<T, unknown>, "columns"> & {
+  isLoading: boolean;
+  error: string | null;
+  onRetry: () => void;
+};
+
 export interface CrudTablePageProps<T> {
+  renderList?: (props: CrudListProps<T>) => React.ReactNode;
 
   columns: any[];
   service: CrudService<T>;
@@ -58,6 +67,8 @@ export interface CrudTablePageProps<T> {
   deleteDialogConfirmText?: string;
 
 
+  editStorageKey?: string;
+  fetchEditItem?: (id: number) => Promise<T>;
   refreshKey?: string;
 
 
@@ -93,21 +104,51 @@ export function CrudTablePage<T extends { id: number; [key: string]: any }>({
   deleteDialogTitle,
   deleteDialogDescription,
   deleteDialogConfirmText = "Confirmar",
+  editStorageKey,
+  fetchEditItem,
   refreshKey,
   addLabel,
   hideRowActionsUntilSelected = false,
   defaultVisibleColumnIds,
+  renderList,
 }: CrudTablePageProps<T>) {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [isDeleting, setIsDeleting] = React.useState(false);
+
+  const [loadError, setLoadError] = React.useState<string | null>(null);
+  const handleLoadError = React.useCallback((error: unknown) => {
+    setLoadError(error instanceof Error ? error.message : "Não foi possível carregar os registros.");
+  }, []);
+  const handleLoadSuccess = React.useCallback((items: T[]) => {
+    setLoadError(null);
+    onLoadSuccess?.(items);
+  }, [onLoadSuccess]);
 
   const crud = useCrudTable<T>({
     service,
     initialPageSize,
     initialStatusFilter,
-    onLoadSuccess,
+    onLoadSuccess: handleLoadSuccess,
+    onLoadError: handleLoadError,
   });
 
   useRegisterRefresh(refreshKey ?? "", crud.loadItems);
+  const { setEditingItem, setFormOpen } = crud;
+
+  React.useEffect(() => {
+    if (readOnly || !editStorageKey || !fetchEditItem) return;
+    const pendingId = window.sessionStorage.getItem(editStorageKey);
+    if (!pendingId) return;
+    window.sessionStorage.removeItem(editStorageKey);
+    const id = Number(pendingId);
+    if (!Number.isInteger(id) || id <= 0) return;
+    fetchEditItem(id).then(item => {
+      setEditingItem(item);
+      setFormOpen(true);
+    }).catch(error => {
+      toast({ title: "Não foi possível abrir a edição", description: error instanceof Error ? error.message : "Tente novamente.", variant: "destructive" });
+    });
+  }, [readOnly, editStorageKey, fetchEditItem, setEditingItem, setFormOpen]);
 
 
   const handleAdd = () => {
@@ -159,7 +200,7 @@ export function CrudTablePage<T extends { id: number; [key: string]: any }>({
       await crud.loadItems();
       crud.handleCloseForm();
     } catch (error) {
-      throw error;
+      toast({ title: "Não foi possível salvar", description: error instanceof Error ? error.message : "Tente novamente.", variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }
@@ -167,7 +208,8 @@ export function CrudTablePage<T extends { id: number; [key: string]: any }>({
 
 
   const handleConfirmDelete = async () => {
-    if (!crud.itemToDelete?.id) return;
+    if (!crud.itemToDelete?.id || isDeleting) return;
+    setIsDeleting(true);
 
     try {
       if (onConfirmDelete) {
@@ -189,10 +231,12 @@ export function CrudTablePage<T extends { id: number; [key: string]: any }>({
       if (crud.items.length === 1 && crud.page > 1) {
         crud.setPage(crud.page - 1);
       }
-    } catch {
-    } finally {
       crud.setDeleteDialogOpen(false);
       crud.setItemToDelete(null);
+    } catch (error) {
+      toast({ title: "Não foi possível concluir a ação", description: error instanceof Error ? error.message : "Tente novamente.", variant: "destructive" });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -215,32 +259,47 @@ export function CrudTablePage<T extends { id: number; [key: string]: any }>({
     ) as React.ReactNode;
   };
 
+  const listProps: DataTableProps<T, unknown> = {
+    columns: columns,
+    data: crud.items,
+    title: title,
+    titleIcon: titleIcon,
+    subtitle: subtitle,
+    pageSize: crud.pageSize,
+    pageIndex: crud.page - 1,
+    totalCount: crud.totalCount,
+    initialFilters: crud.initialFilters,
+    onPageChange: crud.handlePageChange,
+    onPageSizeChange: crud.handlePageSizeChange,
+    onAdd: readOnly ? undefined : handleAdd,
+    addLabel: addLabel,
+    onEdit: readOnly ? undefined : handleEdit,
+    onDelete: readOnly ? undefined : handleDelete,
+    onViewDetails: onViewDetails,
+    onFilterChange: crud.handleFilterChange,
+    onSortingChange: crud.handleSortingChange,
+    readOnly: readOnly,
+    hideRowActionsUntilSelected: hideRowActionsUntilSelected,
+    defaultVisibleColumnIds: defaultVisibleColumnIds,
+  };
+
   return (
     <div className="w-full py-1">
       <div className="space-y-2">
-        <DataTable
-          columns={columns}
-          data={crud.items}
-          title={title}
-          titleIcon={titleIcon}
-          subtitle={subtitle}
-          pageSize={crud.pageSize}
-          pageIndex={crud.page - 1}
-          totalCount={crud.totalCount}
-          initialFilters={crud.initialFilters}
-          onPageChange={crud.handlePageChange}
-          onPageSizeChange={crud.handlePageSizeChange}
-          onAdd={readOnly ? undefined : handleAdd}
-          addLabel={addLabel}
-          onEdit={readOnly ? undefined : handleEdit}
-          onDelete={readOnly ? undefined : handleDelete}
-          onViewDetails={onViewDetails}
-          onFilterChange={crud.handleFilterChange}
-          onSortingChange={crud.handleSortingChange}
-          readOnly={readOnly}
-          hideRowActionsUntilSelected={hideRowActionsUntilSelected}
-          defaultVisibleColumnIds={defaultVisibleColumnIds}
-        />
+        {renderList ? renderList({
+          ...listProps,
+          isLoading: crud.isLoading,
+          error: loadError,
+          onRetry: () => { void crud.loadItems(); },
+        }) : loadError ? (
+          <div role="alert" className="space-y-3 rounded-xl border border-destructive/30 bg-card p-5">
+            <p className="font-medium">Não foi possível carregar {entityNamePlural}.</p>
+            <p className="text-sm text-muted-foreground">{loadError}</p>
+            <Button variant="outline" disabled={crud.isLoading} onClick={() => { void crud.loadItems(); }}>
+              {crud.isLoading ? "Carregando…" : "Tentar novamente"}
+            </Button>
+          </div>
+        ) : <DataTable {...listProps} />}
 
         <FormComponent
           open={crud.formOpen}
@@ -264,8 +323,8 @@ export function CrudTablePage<T extends { id: number; [key: string]: any }>({
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancelar</AlertDialogCancel>
-              <AlertDialogAction onClick={handleConfirmDelete}>
-                {deleteDialogConfirmText}
+              <AlertDialogAction disabled={isDeleting} onClick={(event) => { event.preventDefault(); void handleConfirmDelete(); }}>
+                {isDeleting ? "Aguarde…" : deleteDialogConfirmText}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

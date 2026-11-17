@@ -1,6 +1,8 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { parseDisplayDate } from "@/lib/date";
+
+import { useCallback, useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ArrowRightIcon, HistoryIcon, PlusIcon, Pencil, Trash2 } from "lucide-react"
@@ -13,11 +15,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 interface BudgetMovementHistoryProps {
   budgetId: number
+  refreshKey?: string
+  readOnly?: boolean
   onNewMovement?: () => void
   onMovementChange?: () => void
 }
 
-export function BudgetMovementHistory({ budgetId, onNewMovement, onMovementChange }: BudgetMovementHistoryProps) {
+export function BudgetMovementHistory({ budgetId, refreshKey, readOnly = false, onNewMovement, onMovementChange }: BudgetMovementHistoryProps) {
   const [movements, setMovements] = useState<BudgetMovement[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [editingMovement, setEditingMovement] = useState<BudgetMovement | null>(null)
@@ -32,21 +36,21 @@ export function BudgetMovementHistory({ budgetId, onNewMovement, onMovementChang
     destination_id: 0
   })
 
-  useEffect(() => {
-    loadMovements()
-  }, [budgetId])
-
-  const loadMovements = async () => {
+  const loadMovements = useCallback(async () => {
     try {
       setIsLoading(true)
       const data = await getBudgetMovementsByBudget(budgetId)
       setMovements(data)
-    } catch (error) {
+    } catch  {
       setMovements([])
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [budgetId])
+
+  useEffect(() => {
+    void loadMovements()
+  }, [loadMovements, refreshKey])
 
   const formatCurrency = (amount: string) => {
     const value = parseFloat(amount)
@@ -57,7 +61,7 @@ export function BudgetMovementHistory({ budgetId, onNewMovement, onMovementChang
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString("pt-BR", {
+    return parseDisplayDate(dateString).toLocaleString("pt-BR", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
@@ -93,7 +97,7 @@ export function BudgetMovementHistory({ budgetId, onNewMovement, onMovementChang
       if (onMovementChange) {
         onMovementChange()
       }
-    } catch (error) {
+    } catch  {
       alert('Erro ao excluir movimentação. Tente novamente.')
     } finally {
       setIsSubmitting(false)
@@ -118,7 +122,7 @@ export function BudgetMovementHistory({ budgetId, onNewMovement, onMovementChang
       if (onMovementChange) {
         onMovementChange()
       }
-    } catch (error) {
+    } catch  {
       alert('Erro ao editar movimentação. Tente novamente.')
     } finally {
       setIsSubmitting(false)
@@ -184,7 +188,7 @@ export function BudgetMovementHistory({ budgetId, onNewMovement, onMovementChang
 
                 const isOutgoing = movement.source?.id === budgetId
                 const direction = isOutgoing ? 'SAÍDA' : 'ENTRADA'
-                const relatedBudget = isOutgoing ? movement.destination : movement.source
+
 
                 return (
                   <TableRow key={movement.id}>
@@ -223,6 +227,7 @@ export function BudgetMovementHistory({ budgetId, onNewMovement, onMovementChang
                         <Button
                           variant="ghost"
                           size="sm"
+                          disabled={readOnly}
                           onClick={() => handleEditMovement(movement)}
                           className="h-8 w-8 p-0"
                           title="Editar"
@@ -232,6 +237,7 @@ export function BudgetMovementHistory({ budgetId, onNewMovement, onMovementChang
                         <Button
                           variant="ghost"
                           size="sm"
+                          disabled={readOnly}
                           onClick={() => handleDeleteMovement(movement)}
                           className="h-8 w-8 p-0"
                           title="Excluir"

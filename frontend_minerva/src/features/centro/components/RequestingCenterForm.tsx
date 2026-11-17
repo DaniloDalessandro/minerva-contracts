@@ -32,7 +32,7 @@ interface RequestingCenterFormProps {
   handleClose: () => void;
   initialData: RequestingCenter | null;
   onSubmit: (data: RequestingCenterFormData & { id?: number }) => void;
-  existingNames?: string[];
+  existingCenters?: RequestingCenter[];
 }
 
 export default function RequestingCenterForm({
@@ -40,9 +40,9 @@ export default function RequestingCenterForm({
   handleClose,
   initialData,
   onSubmit,
-  existingNames = [],
+  existingCenters = [],
 }: RequestingCenterFormProps) {
-  const [managementCenters, setManagementCenters] = useState<ManagementCenter[]>([]);
+  const [managementCenters, setManagementCenters] = useState<Pick<ManagementCenter, "id" | "name">[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
@@ -65,17 +65,35 @@ export default function RequestingCenterForm({
   const watchedName = watch("name");
   const watchedManagementCenterId = watch("management_center_id");
 
-  useEffect(() => {
-    async function loadManagementCenters() {
-      try {
-        const data = await fetchManagementCenters(1, 1000);
-        setManagementCenters(data.results);
-      } catch {
-        // ignore
+  const [centersLoading, setCentersLoading] = useState(false);
+  const [centersError, setCentersError] = useState("");
+  const loadManagementCenters = useCallback(async () => {
+    setCentersLoading(true);
+    setCentersError("");
+    try {
+      const all: Pick<ManagementCenter, "id" | "name">[] = [];
+      let page = 1;
+      let count = 0;
+      do {
+        const data = await fetchManagementCenters(page++, 100);
+        all.push(...data.results);
+        count = data.count;
+        if (!data.results.length) break;
+      } while (all.length < count);
+      if (initialData?.management_center && !all.some(item => item.id === initialData.management_center.id)) {
+        all.push(initialData.management_center);
       }
+      setManagementCenters(all);
+    } catch (error) {
+      setCentersError(error instanceof Error ? error.message : "Não foi possível carregar os centros gestores.");
+    } finally {
+      setCentersLoading(false);
     }
-    loadManagementCenters();
-  }, []);
+  }, [initialData]);
+
+  useEffect(() => {
+    if (open) void loadManagementCenters();
+  }, [open, loadManagementCenters]);
 
   useEffect(() => {
     if (open) {
@@ -95,8 +113,9 @@ export default function RequestingCenterForm({
       clearErrors("name");
       return;
     }
-    const localDuplicate = existingNames.some(
-      existingName => existingName.toLowerCase() === name.trim().toLowerCase()
+    const localDuplicate = existingCenters.some(center =>
+      center.id !== initialData?.id && center.management_center?.id === managementCenterId
+      && center.name.toLowerCase() === name.trim().toLowerCase()
     );
     if (localDuplicate) {
       setError("name", {
@@ -106,7 +125,8 @@ export default function RequestingCenterForm({
     } else {
       clearErrors("name");
     }
-  }, [existingNames, setError, clearErrors]);
+    return localDuplicate;
+  }, [existingCenters, initialData, setError, clearErrors]);
 
   useEffect(() => {
     if (!watchedName || watchedManagementCenterId <= 0) return;
@@ -117,8 +137,7 @@ export default function RequestingCenterForm({
     setIsSubmitting(true);
     clearErrors();
     try {
-      checkDuplicateName(data.name, data.management_center_id);
-      if (Object.keys(errors).length > 0) {
+      if (checkDuplicateName(data.name, data.management_center_id)) {
         setIsSubmitting(false);
         return;
       }
@@ -174,6 +193,7 @@ export default function RequestingCenterForm({
                   control={control}
                   render={({ field }) => (
                     <Select
+                      disabled={centersLoading || !!centersError}
                       onValueChange={(value) => field.onChange(parseInt(value))}
                       value={field.value > 0 ? field.value.toString() : ""}
                     >
@@ -193,6 +213,8 @@ export default function RequestingCenterForm({
                     </Select>
                   )}
                 />
+                {centersLoading && <p role="status" className="text-xs text-muted-foreground">Carregando centros gestores…</p>}
+                {centersError && <div role="alert" className="text-xs text-destructive"><p>{centersError}</p><Button type="button" variant="link" onClick={() => { void loadManagementCenters(); }}>Tentar novamente</Button></div>}
                 <span className="min-h-[16px] text-xs leading-[16px] text-destructive block">
                   {errors.management_center_id?.message}
                 </span>

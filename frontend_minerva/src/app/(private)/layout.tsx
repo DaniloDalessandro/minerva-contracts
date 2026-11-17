@@ -103,14 +103,12 @@ export default function Layout({
                 </BreadcrumbList>
               </Breadcrumb>
 
-
               <div className="flex items-center gap-1 ml-auto shrink-0">
                 <NotificationBell />
               </div>
             </header>
 
-
-            <main className="flex-1 overflow-hidden p-5 animate-fade-in">
+            <main className="min-h-0 flex-1 overflow-y-auto p-5 animate-fade-in">
               {children}
             </main>
           </SidebarInset>

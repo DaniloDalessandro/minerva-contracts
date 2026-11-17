@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect } from "react"
 import { Loader2, Save, ShieldCheck, ChevronRight, CheckSquare, Square } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toast } from "@/hooks/use-toast"
@@ -27,34 +27,30 @@ export default function PermissionsTab() {
   const [saving, setSaving] = useState(false)
   const [dirty, setDirty] = useState(false)
 
-  const load = useCallback(async () => {
-    setLoading(true)
-    try {
-      const [permRes, groupRes] = await Promise.all([PermissionService.fetchPermissions(), PermissionService.fetchGroups()])
-      setModules(permRes.modules)
-      const sorted = [...groupRes].sort(
-        (a, b) => GROUP_ORDER.indexOf(a.name) - GROUP_ORDER.indexOf(b.name)
-      )
-      setGroups(sorted)
-      if (sorted.length > 0 && selectedGroupId === null) {
-        setSelectedGroupId(sorted[0].id)
-        setPendingIds(new Set(sorted[0].permission_ids))
-      }
-    } catch {
-      toast({ title: "Erro ao carregar permissões", variant: "destructive" })
-    } finally {
-      setLoading(false)
-    }
-  }, [selectedGroupId])
-
   useEffect(() => {
-    load()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+    async function load() {
+      setLoading(true)
+      try {
+        const [permRes, groupRes] = await Promise.all([PermissionService.fetchPermissions(), PermissionService.fetchGroups()])
+        setModules(permRes.modules)
+        const sorted = [...groupRes].sort(
+          (a, b) => GROUP_ORDER.indexOf(a.name) - GROUP_ORDER.indexOf(b.name)
+        )
+        setGroups(sorted)
+        if (sorted.length > 0) {
+          setSelectedGroupId(sorted[0].id)
+          setPendingIds(new Set(sorted[0].permission_ids))
+        }
+      } catch {
+        toast({ title: "Erro ao carregar permissões", variant: "destructive" })
+      } finally {
+        setLoading(false)
+      }
+    }
+    void load()
+  }, [])
 
   const selectGroup = (group: GroupPermissions) => {
-    if (dirty) {
-      // descarta alterações não salvas ao trocar de grupo
-    }
     setSelectedGroupId(group.id)
     setPendingIds(new Set(group.permission_ids))
     setDirty(false)
@@ -63,7 +59,8 @@ export default function PermissionsTab() {
   const togglePerm = (id: number) => {
     setPendingIds((prev) => {
       const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
       return next
     })
     setDirty(true)

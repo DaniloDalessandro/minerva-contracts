@@ -84,6 +84,7 @@ pgvector==0.4.1
 gunicorn==23.0.0
 uvicorn[standard]==0.34.3
 celery==5.4.0
+kombu==5.5.4
 redis==5.2.1
 django-celery-results>=2.5.1
 django-celery-beat>=2.6.0

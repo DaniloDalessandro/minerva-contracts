@@ -70,7 +70,7 @@ export default function DirectionForm({
       return;
     }
     const localDuplicate = existingNames.some(
-      existingName => existingName.toLowerCase() === name.trim().toLowerCase()
+      existingName => existingName.toLowerCase() === name.trim().toLowerCase() && existingName.toLowerCase() !== initialData?.name.toLowerCase()
     );
     if (localDuplicate) {
       setError("name", {
@@ -80,7 +80,8 @@ export default function DirectionForm({
     } else {
       clearErrors("name");
     }
-  }, [existingNames, setError, clearErrors]);
+    return localDuplicate;
+  }, [existingNames, initialData, setError, clearErrors]);
 
   useEffect(() => {
     if (!watchedName) return;
@@ -91,15 +92,14 @@ export default function DirectionForm({
     setIsSubmitting(true);
     clearErrors();
     try {
-      checkDuplicateName(data.name);
-      if (Object.keys(errors).length > 0) {
+      if (checkDuplicateName(data.name)) {
         setIsSubmitting(false);
         return;
       }
       await onSubmit({ ...data, id: initialData?.id });
       handleClose();
       reset();
-    } catch (error) {
+    } catch  {
       // handled by parent
     } finally {
       setIsSubmitting(false);

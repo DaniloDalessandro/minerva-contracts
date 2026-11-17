@@ -290,8 +290,9 @@ class AliceChatView(APIView):
             logger.error(f"Erro no chat com Alice: {str(e)}")
             friendly_response = FRIENDLY_MESSAGES['internal_error']
             return Response({
-                'success': True,
-                'response': friendly_response
+                'success': False,
+                'response': friendly_response,
+                'session_id': session.session_id if 'session' in locals() else None
             }, status=status.HTTP_200_OK)
 
 

@@ -15,11 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { ManagementCenter } from "@/lib/api/centers";
-import {
-  managementCenterSchema,
-  ManagementCenterFormData,
-  createUniqueManagementCenterNameValidator
-} from "@/lib/schemas/center-schemas";
+import { managementCenterSchema, ManagementCenterFormData } from "@/lib/schemas/center-schemas";
 
 interface ManagementCenterFormProps {
   open: boolean;
@@ -70,6 +66,7 @@ export default function ManagementCenterForm({
     }
     const localDuplicate = existingNames.some(
       existingName => existingName.toLowerCase() === name.trim().toLowerCase()
+        && existingName.toLowerCase() !== initialData?.name.toLowerCase()
     );
     if (localDuplicate) {
       setError("name", {
@@ -79,7 +76,8 @@ export default function ManagementCenterForm({
     } else {
       clearErrors("name");
     }
-  }, [existingNames, setError, clearErrors]);
+    return localDuplicate;
+  }, [existingNames, initialData, setError, clearErrors]);
 
   useEffect(() => {
     if (!watchedName) return;
@@ -90,8 +88,7 @@ export default function ManagementCenterForm({
     setIsSubmitting(true);
     clearErrors();
     try {
-      checkDuplicateName(data.name);
-      if (Object.keys(errors).length > 0) {
+      if (checkDuplicateName(data.name)) {
         setIsSubmitting(false);
         return;
       }

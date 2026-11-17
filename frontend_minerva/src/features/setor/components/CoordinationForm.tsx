@@ -33,7 +33,7 @@ interface CoordinationFormProps {
   handleClose: () => void;
   initialData: Coordination | null;
   onSubmit: (data: CoordinationFormData & { id?: number }) => void;
-  existingNames?: string[];
+  existingItems?: Coordination[];
 }
 
 export default function CoordinationForm({
@@ -41,7 +41,7 @@ export default function CoordinationForm({
   handleClose,
   initialData,
   onSubmit,
-  existingNames = [],
+  existingItems = [],
 }: CoordinationFormProps) {
   const [managements, setManagements] = useState<Management[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -75,13 +75,13 @@ export default function CoordinationForm({
         // ignore
       }
     }
-    loadManagements();
-  }, []);
+    if (open) void loadManagements();
+  }, [open]);
 
   useEffect(() => {
     if (open) {
       if (initialData) {
-        reset({ name: initialData.name, management_id: initialData.management || 0 });
+        reset({ name: initialData.name, management_id: (typeof initialData.management === "object" ? initialData.management.id : initialData.management) || 0 });
       } else {
         reset({ name: "", management_id: 0 });
       }
@@ -93,8 +93,9 @@ export default function CoordinationForm({
       clearErrors("name");
       return;
     }
-    const localDuplicate = existingNames.some(
-      existingName => existingName.toLowerCase() === name.trim().toLowerCase()
+    const localDuplicate = existingItems.some(item =>
+      item.id !== initialData?.id && (typeof item.management === "object" ? item.management.id : item.management) === managementId
+      && item.name.toLowerCase() === name.trim().toLowerCase()
     );
     if (localDuplicate) {
       setError("name", {
@@ -104,7 +105,8 @@ export default function CoordinationForm({
     } else {
       clearErrors("name");
     }
-  }, [existingNames, setError, clearErrors]);
+    return localDuplicate;
+  }, [existingItems, initialData, setError, clearErrors]);
 
   useEffect(() => {
     if (!watchedName || watchedManagementId <= 0) return;
@@ -115,8 +117,7 @@ export default function CoordinationForm({
     setIsSubmitting(true);
     clearErrors();
     try {
-      checkDuplicateName(data.name, data.management_id);
-      if (Object.keys(errors).length > 0) {
+      if (checkDuplicateName(data.name, data.management_id)) {
         setIsSubmitting(false);
         return;
       }

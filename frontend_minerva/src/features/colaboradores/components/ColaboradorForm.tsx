@@ -219,6 +219,7 @@ export default function ColaboradorForm({
   }, [open]);
 
   useEffect(() => {
+    if (loadingDirections) return;
     if (formData.direction > 0) {
       const filtered = managements.filter((mgmt) => {
         const directionId = typeof mgmt.direction === "object" ? mgmt.direction.id : mgmt.direction;
@@ -234,9 +235,10 @@ export default function ColaboradorForm({
       setFormData((prev) => ({ ...prev, management: 0, coordination: 0 }));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData.direction, managements]);
+  }, [formData.direction, managements, loadingDirections]);
 
   useEffect(() => {
+    if (loadingDirections) return;
     if (formData.management > 0) {
       const filtered = coordinations.filter((coord) => {
         const managementId = typeof coord.management === "object" ? coord.management.id : coord.management;
@@ -252,7 +254,7 @@ export default function ColaboradorForm({
       setFormData((prev) => ({ ...prev, coordination: 0 }));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData.management, coordinations]);
+  }, [formData.management, coordinations, loadingDirections]);
 
   useEffect(() => {
     if (open) {
@@ -485,7 +487,7 @@ export default function ColaboradorForm({
       coordination: formData.coordination > 0 ? formData.coordination : null,
     };
 
-    onSubmit(submitData);
+    Promise.resolve(onSubmit(submitData)).finally(() => { submittingRef.current = false; });
   };
 
   const directionOptions: ComboboxOption[] = useMemo(
@@ -743,7 +745,7 @@ export default function ColaboradorForm({
                 ref={submitRef}
                 type="submit"
                 className="h-9 w-full rounded-[10px] sm:w-auto gap-2 font-semibold"
-                disabled={isSubmitting || loadingDirections || cpfStatus === "duplicate" || employeeIdStatus === "duplicate"}
+                disabled={isSubmitting || loadingDirections || cpfStatus === "checking" || employeeIdStatus === "checking" || cpfStatus === "duplicate" || employeeIdStatus === "duplicate"}
               >
                 {isSubmitting ? (
                   <Loader2 className="h-4 w-4 animate-spin shrink-0" />

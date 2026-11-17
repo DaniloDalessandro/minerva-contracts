@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Playwright reports and authenticated test sessions
+/playwright-report/
+/test-results/
+/tests/e2e/.auth/
+/tests/e2e/.auth-state.json

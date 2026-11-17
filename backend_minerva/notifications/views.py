@@ -1,5 +1,5 @@
 import logging
-from django.db.models import Q
+from django.db.models import Q, Exists, OuterRef, Subquery
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from rest_framework import generics, status
@@ -10,10 +10,24 @@ from rest_framework.response import Response
 from employee.utils.access_control import get_employee_queryset
 from employee.models import Employee
 from contract.models import Contract
-from .models import ContractNotification
+from .models import ContractNotification, ContractNotificationRead
 from .serializers import ContractNotificationSerializer
 
 logger = logging.getLogger(__name__)
+
+
+def notifications_for_user(user):
+    employees = get_employee_queryset(user, Employee.objects.all())
+    if user.employee_id:
+        employees = employees | Employee.objects.filter(pk=user.employee_id)
+    contracts = Contract.objects.filter(
+        Q(main_inspector__in=employees) | Q(substitute_inspector__in=employees)
+    ).values('id')
+    reads = ContractNotificationRead.objects.filter(notification_id=OuterRef('pk'), user=user)
+    return ContractNotification.objects.filter(contract_id__in=contracts).select_related('contract').annotate(
+        user_is_read=Exists(reads),
+        user_read_at=Subquery(reads.values('read_at')[:1]),
+    ).order_by('-created_at')
 
 
 @extend_schema(tags=['Notificações'])
@@ -26,28 +40,15 @@ class ContractNotificationListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        user = self.request.user
-        employee_qs = get_employee_queryset(user, Employee.objects.all())
-
-        contracts_qs = Contract.objects.filter(
-            Q(main_inspector__in=employee_qs) | Q(substitute_inspector__in=employee_qs)
-        ).values_list('id', flat=True)
-
-        qs = ContractNotification.objects.filter(
-            contract_id__in=contracts_qs
-        ).select_related('contract').order_by('-created_at')
-
-
-        unread_only = self.request.query_params.get('unread', None)
-        if unread_only == 'true':
-            qs = qs.filter(is_read=False)
-
+        qs = notifications_for_user(self.request.user)
+        if self.request.query_params.get('unread') == 'true':
+            qs = qs.filter(user_is_read=False)
         return qs
 
     def list(self, request, *args, **kwargs):
         qs = self.get_queryset()
         serializer = self.get_serializer(qs, many=True)
-        unread_count = qs.filter(is_read=False).count()
+        unread_count = qs.filter(user_is_read=False).count()
         return Response({
             'count': qs.count(),
             'unread_count': unread_count,
@@ -61,11 +62,14 @@ class ContractNotificationListView(generics.ListAPIView):
 def mark_notification_read(request, pk):
     """Marca uma notificação como lida."""
     try:
-        notification = ContractNotification.objects.get(pk=pk)
+        notification = notifications_for_user(request.user).get(pk=pk)
     except ContractNotification.DoesNotExist:
         return Response({'error': 'Notificação não encontrada'}, status=status.HTTP_404_NOT_FOUND)
 
-    notification.mark_read()
+    ContractNotificationRead.objects.get_or_create(
+        notification=notification, user=request.user,
+        defaults={'criado_por': request.user, 'atualizado_por': request.user},
+    )
     return Response({'success': True, 'message': 'Notificação marcada como lida.'})
 
 
@@ -75,14 +79,12 @@ def mark_notification_read(request, pk):
 def mark_all_read(request):
     """Marca todas as notificações do usuário como lidas."""
     user = request.user
-    employee_qs = get_employee_queryset(user, Employee.objects.all())
-    contracts_qs = Contract.objects.filter(
-        Q(main_inspector__in=employee_qs) | Q(substitute_inspector__in=employee_qs)
-    ).values_list('id', flat=True)
-    updated = ContractNotification.objects.filter(
-        contract_id__in=contracts_qs,
-        is_read=False,
-    ).update(is_read=True, read_at=timezone.now())
+    unread_ids = list(notifications_for_user(user).filter(user_is_read=False).values_list('id', flat=True))
+    ContractNotificationRead.objects.bulk_create([
+        ContractNotificationRead(notification_id=pk, user=user, criado_por=user, atualizado_por=user)
+        for pk in unread_ids
+    ], ignore_conflicts=True)
+    updated = len(unread_ids)
 
     return Response({'success': True, 'updated': updated})
 
