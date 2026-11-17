@@ -57,12 +57,6 @@ export function NavUser({
     window.location.href = "/login"
   }
 
-  const getInitials = (name: string) => {
-    const words = name.trim().split(" ")
-    if (words.length === 1) return words[0][0].toUpperCase()
-    return words[0][0].toUpperCase() + words[words.length - 1][0].toUpperCase()
-  }
-
   const capitalizeFirst = (name: string) => {
     if (!name) return name
     return name.charAt(0).toUpperCase() + name.slice(1)

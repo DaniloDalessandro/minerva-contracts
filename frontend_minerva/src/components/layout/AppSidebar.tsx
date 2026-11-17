@@ -38,8 +38,6 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { usePathname } from "next/navigation"
 
 import { useRouter } from "next/navigation"
 import { ColaboradorForm } from "@/features/colaboradores"
@@ -74,11 +72,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     canManageAuxilios,
   } = usePermissions()
   const { refreshData: triggerRefresh } = useDataRefresh()
-  const pathname = usePathname()
+
   const router = useRouter()
 
   // GERENTE+ can view all modules even if they can't add everything
-  const canViewOperacional = canManageColaboradores || canManageContratos
 
   const [dialogState, setDialogState] = React.useState({
     colaborador: false,
@@ -292,7 +289,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarFooter>
 
       <SidebarRail />
-
 
       {dialogState.colaborador && (
         <ColaboradorForm

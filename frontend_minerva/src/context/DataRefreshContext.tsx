@@ -32,12 +32,11 @@ export function DataRefreshProvider({ children }: { children: React.ReactNode })
     if (refreshFn) {
       try {
         await refreshFn()
-      } catch (error) {
+      } catch  {
       }
     } else {
     }
   }, [])
-
 
   const getEntityTypeFromPathname = (pathname: string): string | null => {
     if (pathname.includes('/colaboradores')) return 'colaboradores'
@@ -79,7 +78,6 @@ export function useDataRefresh() {
   return context
 }
 
-
 export function usePageRefresh(entityType: string, refreshFunction: RefreshFunction) {
   const { registerRefreshFunction, unregisterRefreshFunction } = useDataRefresh()
 
@@ -93,6 +91,5 @@ export function usePageRefresh(entityType: string, refreshFunction: RefreshFunct
     }
   }, [entityType, refreshFunction, registerRefreshFunction, unregisterRefreshFunction])
 }
-
 
 export { usePageRefresh as useRegisterRefresh }

@@ -135,3 +135,8 @@ export const aliceAPI = {
   getAvailableTables: getAvailableTablesAPI,
   getDatabaseSchema: getDatabaseSchemaAPI,
 };
+
+export async function deleteSessionAPI(sessionId: number): Promise<void> {
+  const response = await apiClient(API_ENDPOINTS.ALICE.SESSION_DETAIL(sessionId), { method: 'DELETE' });
+  if (!response.ok) throw new Error('Falha ao excluir a conversa');
+}

@@ -201,6 +201,7 @@ DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@sistemacontra
 
 
 FRONTEND_URL = config('FRONTEND_URL', default='http://localhost:3000')
+PASSWORD_RESET_TIMEOUT = 24 * 60 * 60
 
 
 REDIS_URL = config('REDIS_URL', default='redis://localhost:6379/0')
@@ -252,7 +253,7 @@ ALICE_CONFIDENCE_THRESHOLD = config('ALICE_CONFIDENCE_THRESHOLD', default=0.70, 
 
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": (
-        "rest_framework.pagination.PageNumberPagination"
+        "core.pagination.CustomPageNumberPagination"
     ),
     "PAGE_SIZE": 10,
     "DEFAULT_FILTER_BACKENDS": [
@@ -280,6 +281,7 @@ REST_FRAMEWORK = {
         'login': '5/hour',
         'registration': '3/hour',
         'password_reset': '3/hour',
+        'password_reset_confirm': '10/hour',
         'pdf_export': '10/hour',
         'ai_assistant': '30/hour',
     },

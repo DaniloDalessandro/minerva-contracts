@@ -1,5 +1,7 @@
 "use client"
 
+import { parseDisplayDate } from "@/lib/date";
+
 import { useEffect, useState, useCallback, useMemo } from "react"
 import {
   Card, CardContent, CardHeader, CardTitle, CardDescription,
@@ -46,7 +48,7 @@ const fmtShort = (v: number) => {
 }
 
 const fmtDate = (d: string) =>
-  new Date(d).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  parseDisplayDate(d).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })
 
 // ── KPI Card ──────────────────────────────────────────────────────────────────
 function KpiCard({ title, value, subtitle, icon, accent }: {
@@ -309,7 +311,7 @@ function ExpiringList({ items }: { items: any[] }) {
   return (
     <div className="space-y-2">
       {items.map((c: any) => {
-        const days = c.expiration_date ? Math.ceil((new Date(c.expiration_date).getTime() - Date.now()) / 86400000) : null
+        const days = c.expiration_date ? Math.ceil((parseDisplayDate(c.expiration_date).getTime() - Date.now()) / 86400000) : null
         return (
           <div key={c.protocol_number} className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-amber-50/60 dark:bg-amber-500/8 border border-amber-100 dark:border-amber-500/15 hover:bg-amber-50 dark:hover:bg-amber-500/12 transition-colors">
             <div className="flex items-center gap-3">
@@ -404,7 +406,7 @@ export default function DashboardPage() {
   }))
 
   return (
-    <div className="h-full flex flex-col gap-3 overflow-hidden pb-1">
+    <div className="h-full flex flex-col gap-3 overflow-x-hidden overflow-y-auto lg:overflow-hidden pb-1">
 
       {/* Header */}
       <div className="flex items-center justify-between shrink-0">
@@ -426,9 +428,6 @@ export default function DashboardPage() {
               <AlertTriangle className="h-3 w-3" /> {contracts.expiring_30_days} vencendo
             </Badge>
           )}
-          <Badge variant="outline" className="gap-1.5 px-2.5 py-1 text-xs">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Ao vivo
-          </Badge>
           <Button variant="ghost" size="icon" onClick={load} className="h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground">
             <RefreshCw className="h-3.5 w-3.5" />
           </Button>
@@ -487,8 +486,11 @@ export default function DashboardPage() {
                 { label: 'Contratos Vencidos',     value: contracts.expired ?? 0, color: 'text-destructive', bg: 'bg-destructive/5' },
                 { label: 'Contratos Encerrados',   value: contracts.closed ?? 0,  color: 'text-muted-foreground', bg: '' },
               ].map(({ label, value, color, bg }) => (
-                <Card key={label} className={`flex items-center px-5 py-3 ${bg}`}>
-                  <div><p className="text-xs text-muted-foreground">{label}</p><p className={`text-2xl font-bold ${color}`}>{value}</p></div>
+                <Card key={label} className={`flex items-center justify-center px-5 py-4 ${bg}`}>
+                  <div className="w-full min-w-0 space-y-2 text-center">
+                    <p className="text-sm font-medium text-muted-foreground">{label}</p>
+                    <p className={`text-4xl sm:text-5xl font-bold leading-none tracking-tight tabular-nums ${color}`}>{value}</p>
+                  </div>
                 </Card>
               ))}
             </div>

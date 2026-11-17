@@ -1,3 +1,4 @@
+import { fetchCollection } from './collection';
 import { apiClient } from './client';
 import { API_ENDPOINTS } from '@/constants/api-endpoints';
 import type {
@@ -8,12 +9,8 @@ import type {
 
 export type { Direction, Management, Coordination } from '@/types/entities/setor';
 
-
 export async function fetchDirectionsAPI(params: URLSearchParams): Promise<any> {
-  const url = `${API_ENDPOINTS.DIRECTION.LIST}?${params.toString()}`;
-  const res = await apiClient(url);
-  if (!res.ok) throw new Error(`Erro ao buscar direções: ${res.status}`);
-  return res.json();
+  return fetchCollection(API_ENDPOINTS.DIRECTION.LIST, params);
 }
 
 export async function createDirectionAPI(data: { name: string }): Promise<Direction> {
@@ -45,12 +42,8 @@ export async function deleteDirectionAPI(id: number): Promise<any> {
   return res.json();
 }
 
-
 export async function fetchManagementsAPI(params: URLSearchParams): Promise<any> {
-  const url = `${API_ENDPOINTS.MANAGEMENT.LIST}?${params.toString()}`;
-  const res = await apiClient(url);
-  if (!res.ok) throw new Error(`Erro ao buscar gerências: ${res.status}`);
-  return res.json();
+  return fetchCollection(API_ENDPOINTS.MANAGEMENT.LIST, params);
 }
 
 export async function createManagementAPI(data: { name: string; direction_id: number }): Promise<Management> {
@@ -82,12 +75,8 @@ export async function deleteManagementAPI(id: number): Promise<any> {
   return res.json();
 }
 
-
 export async function fetchCoordinationsAPI(params: URLSearchParams): Promise<any> {
-  const url = `${API_ENDPOINTS.COORDINATION.LIST}?${params.toString()}`;
-  const res = await apiClient(url);
-  if (!res.ok) throw new Error("Erro ao buscar coordenações");
-  return res.json();
+  return fetchCollection(API_ENDPOINTS.COORDINATION.LIST, params);
 }
 
 export async function createCoordinationAPI(data: { name: string; management_id: number }): Promise<Coordination> {
@@ -118,7 +107,6 @@ export async function deleteCoordinationAPI(id: number): Promise<any> {
   if (!res.ok) throw new Error("Erro ao inativar coordenação");
   return res.json();
 }
-
 
 export async function fetchDirections(page = 1, pageSize = 10, search = "", ordering = "", statusFilter = ""): Promise<any> {
   const params = new URLSearchParams({

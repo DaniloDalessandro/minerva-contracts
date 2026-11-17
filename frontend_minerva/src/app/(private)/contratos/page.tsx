@@ -2,10 +2,21 @@
 
 import React from "react";
 import { FileText } from "lucide-react";
-import { CrudTablePage } from "@/components/common/CrudTablePage";
+import { CrudTablePage, type CrudListProps } from "@/components/common/CrudTablePage";
 import { contractColumns, ContractForm, type Contract } from "@/features/contratos";
 import { ContractService } from "@/services";
 import { usePermissions } from "@/hooks";
+
+import { ContractCards } from "@/features/contratos/components/ContractCards";
+
+const contractServiceAdapter = {
+  fetch: ContractService.fetchContracts,
+  create: ContractService.createContract,
+  update: ContractService.updateContract,
+  toggleStatus: ContractService.toggleStatus,
+};
+
+const renderContractCards = (props: CrudListProps<Contract>) => <ContractCards {...props} />;
 
 export default function ContratosPage() {
   const { canManageContratos } = usePermissions()
@@ -38,16 +49,11 @@ export default function ContratosPage() {
   };
 
 
-  const contractServiceAdapter = {
-    fetch: ContractService.fetchContracts,
-    create: ContractService.createContract,
-    update: ContractService.updateContract,
-    toggleStatus: ContractService.toggleStatus,
-  };
 
   return (
     <CrudTablePage<Contract>
       columns={contractColumns}
+      renderList={renderContractCards}
       service={contractServiceAdapter}
       readOnly={!canManageContratos}
       entityName="contrato"
@@ -55,6 +61,8 @@ export default function ContratosPage() {
       title="Contratos"
       titleIcon={<FileText className="h-8 w-8" />}
       subtitle="Gerenciamento de contratos e fiscalizações"
+      editStorageKey="editContractId"
+      fetchEditItem={ContractService.fetchContractById}
       FormComponent={ContractForm}
       initialStatusFilter="ALL"
       onViewDetails={handleViewDetails}
@@ -62,14 +70,6 @@ export default function ContratosPage() {
       deleteDialogDescription={getDeleteDialogDescription}
       deleteDialogConfirmText="Confirmar"
       refreshKey="contratos"
-      hideRowActionsUntilSelected
-      defaultVisibleColumnIds={[
-        "protocol_number",
-        "main_inspector.full_name",
-        "payment_nature",
-        "current_value",
-        "status",
-      ]}
     />
   );
 }

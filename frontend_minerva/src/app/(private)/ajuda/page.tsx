@@ -304,7 +304,6 @@ export default function AjudaPage() {
         </div>
       </div>
 
-
       <Card>
         <CardContent className="p-5">
           <div className="flex flex-col md:flex-row gap-4">
@@ -333,7 +332,6 @@ export default function AjudaPage() {
           </div>
         </CardContent>
       </Card>
-
 
       <Card>
         <CardHeader>
@@ -460,7 +458,6 @@ export default function AjudaPage() {
             </Card>
           )}
         </div>
-
 
         <div className="space-y-4">
           <h2 className="text-lg font-semibold flex items-center gap-2 text-foreground">

@@ -54,9 +54,10 @@ export default function ResetPasswordPage() {
           router.push("/login")
         }, 3000)
       } else {
-        setError(data.error || "Erro ao redefinir senha. O link pode ter expirado.")
+        const message = data.error || data.password?.[0] || data.detail
+        setError(typeof message === "string" ? message : "Erro ao redefinir senha. O link pode ter expirado.")
       }
-    } catch (err) {
+    } catch  {
       setError("Erro ao conectar com o servidor")
     } finally {
       setLoading(false)

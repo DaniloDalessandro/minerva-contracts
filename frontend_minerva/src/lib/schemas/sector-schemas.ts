@@ -1,6 +1,5 @@
 import { z } from 'zod'
 
-
 export const directionSchema = z.object({
   name: z
     .string()
@@ -10,7 +9,6 @@ export const directionSchema = z.object({
     .regex(/.*[a-zA-Z].*[a-zA-Z].*/, 'O registro deve conter pelo menos duas letras')
     .trim(),
 })
-
 
 export const managementSchema = z.object({
   name: z
@@ -25,7 +23,6 @@ export const managementSchema = z.object({
     .min(1, 'Selecione uma direção válida')
 })
 
-
 export const coordinationSchema = z.object({
   name: z
     .string()
@@ -39,11 +36,9 @@ export const coordinationSchema = z.object({
     .min(1, 'Selecione uma gerência válida')
 })
 
-
 export type DirectionFormData = z.infer<typeof directionSchema>
 export type ManagementFormData = z.infer<typeof managementSchema>
 export type CoordinationFormData = z.infer<typeof coordinationSchema>
-
 
 export const validateUniqueDirectionName = async (
   name: string,
@@ -55,7 +50,6 @@ export const validateUniqueDirectionName = async (
     .filter((_, index) => index !== currentId)
     .some(existingName => existingName.toLowerCase() === trimmedName)
 }
-
 
 export const validateUniqueManagementName = async (
   name: string,
@@ -69,7 +63,6 @@ export const validateUniqueManagementName = async (
     .some(existingName => existingName.toLowerCase() === trimmedName)
 }
 
-
 export const validateUniqueCoordinationName = async (
   name: string,
   managementId: number,
@@ -81,7 +74,6 @@ export const validateUniqueCoordinationName = async (
     .filter((_, index) => index !== currentId)
     .some(existingName => existingName.toLowerCase() === trimmedName)
 }
-
 
 export const createUniqueDirectionNameValidator = (existingNames: string[], currentId?: number) => {
   return z.string().refine(

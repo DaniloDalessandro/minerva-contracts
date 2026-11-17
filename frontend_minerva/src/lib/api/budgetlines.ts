@@ -1,3 +1,5 @@
+import { fetchAllRecords } from './collection';
+import { budgetLabel, normalizeBudgetLine } from './normalizers';
 import { apiClient } from './client';
 import { API_ENDPOINTS } from '@/constants/api-endpoints';
 import type {
@@ -17,7 +19,8 @@ export async function fetchBudgetLinesAPI(params: URLSearchParams): Promise<Budg
   if (!response.ok) {
     throw new Error('Falha ao buscar linhas orçamentárias');
   }
-  return response.json();
+  const data = await response.json();
+  return { ...data, results: data.results.map(normalizeBudgetLine) };
 }
 
 export async function fetchBudgetLineByIdAPI(id: number): Promise<BudgetLine> {
@@ -26,7 +29,7 @@ export async function fetchBudgetLineByIdAPI(id: number): Promise<BudgetLine> {
   if (!response.ok) {
     throw new Error('Falha ao buscar linha orçamentária');
   }
-  return response.json();
+  return normalizeBudgetLine(await response.json());
 }
 
 export async function createBudgetLineAPI(data: CreateBudgetLineData): Promise<BudgetLine> {
@@ -62,9 +65,9 @@ export async function deleteBudgetLineAPI(id: number): Promise<any> {
   });
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.message || 'Falha ao excluir linha orçamentária');
+    throw new Error(errorData.detail || errorData.message || 'Falha ao excluir linha orçamentária');
   }
-  return response.json();
+  return response.status === 204 ? null : response.json();
 }
 
 
@@ -109,48 +112,28 @@ export async function deleteBudgetLineMovementAPI(id: number): Promise<any> {
   if (!response.ok) {
     throw new Error('Falha ao excluir movimentação da linha orçamentária');
   }
-  return response.json();
+  return response.status === 204 ? null : response.json();
 }
 
 
 export async function fetchBudgetsAPI(): Promise<any[]> {
-  const url = `${API_ENDPOINTS.BUDGET.LIST}?page_size=1000`;
-  const response = await apiClient(url);
-  if (!response.ok) {
-    throw new Error('Falha ao buscar orçamentos');
-  }
-  const data = await response.json();
-  return data.results || data;
+  const data = await fetchAllRecords(API_ENDPOINTS.BUDGET.LIST);
+  return data.map(item => ({ ...item, name: budgetLabel(item) }));
 }
 
 export async function fetchManagementCentersAPI(): Promise<any[]> {
-  const url = `${API_ENDPOINTS.MANAGEMENT_CENTER.LIST}?page_size=1000`;
-  const response = await apiClient(url);
-  if (!response.ok) {
-    throw new Error('Falha ao buscar centros de gestão');
-  }
-  const data = await response.json();
-  return data.results || data;
+  const data = await fetchAllRecords(API_ENDPOINTS.MANAGEMENT_CENTER.LIST);
+  return data;
 }
 
 export async function fetchRequestingCentersAPI(): Promise<any[]> {
-  const url = `${API_ENDPOINTS.REQUESTING_CENTER.LIST}?page_size=1000`;
-  const response = await apiClient(url);
-  if (!response.ok) {
-    throw new Error('Falha ao buscar centros solicitantes');
-  }
-  const data = await response.json();
-  return data.results || data;
+  const data = await fetchAllRecords(API_ENDPOINTS.REQUESTING_CENTER.LIST);
+  return data;
 }
 
 export async function fetchEmployeesForDropdownAPI(): Promise<any[]> {
-  const url = `${API_ENDPOINTS.EMPLOYEE.ALL_EMPLOYEES}?page_size=1000`;
-  const response = await apiClient(url);
-  if (!response.ok) {
-    throw new Error('Falha ao buscar funcionários');
-  }
-  const data = await response.json();
-  return data.results || data;
+  const data = await fetchAllRecords(API_ENDPOINTS.EMPLOYEE.LIST);
+  return data;
 }
 
 

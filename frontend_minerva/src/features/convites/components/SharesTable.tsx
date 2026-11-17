@@ -170,7 +170,7 @@ export function SharesTable({ resourceType, resourceLabel }: SharesTableProps) {
                           <span>{formatDate(share.created_at)}</span>
                         </div>
                         {share.message && (
-                          <p className="mt-1.5 text-xs text-muted-foreground italic">"{share.message}"</p>
+                          <p className="mt-1.5 text-xs text-muted-foreground italic">&quot;{share.message}&quot;</p>
                         )}
                       </div>
                     </div>
@@ -205,7 +205,7 @@ export function SharesTable({ resourceType, resourceLabel }: SharesTableProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Revogar compartilhamento</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja revogar o acesso de <strong>{toRevoke?.invited_email}</strong> ao {resourceLabel.toLowerCase()} <strong>"{toRevoke?.resource_name}"</strong>?
+              Tem certeza que deseja revogar o acesso de <strong>{toRevoke?.invited_email}</strong> ao {resourceLabel.toLowerCase()} <strong>&quot;{toRevoke?.resource_name}&quot;</strong>?
               O usuário perderá o acesso imediatamente.
             </AlertDialogDescription>
           </AlertDialogHeader>

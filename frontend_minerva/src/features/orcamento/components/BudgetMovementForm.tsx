@@ -82,21 +82,17 @@ export function BudgetMovementForm({
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-
     if (!formData.source || formData.source === 0) {
       newErrors.source = "Orçamento de origem é obrigatório"
     }
-
 
     if (!formData.destination || formData.destination === 0) {
       newErrors.destination = "Orçamento de destino é obrigatório"
     }
 
-
     if (formData.source && formData.destination && formData.source === formData.destination) {
       newErrors.destination = "Orçamento de destino deve ser diferente do orçamento de origem"
     }
-
 
     const amount = parseFloat(formData.amount)
     if (!formData.amount || amount <= 0) {

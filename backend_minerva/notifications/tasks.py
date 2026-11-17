@@ -18,7 +18,7 @@ def check_expiring_contracts():
     from .models import ContractNotification
     from .services import send_expiration_email
 
-    today = timezone.now().date()
+    today = timezone.localdate()
     target_date = today + timedelta(days=30)
 
     cycle_month = date(today.year, today.month, 1)
@@ -49,8 +49,9 @@ def check_expiring_contracts():
         if not notification.email_sent_at:
             sent_to = send_expiration_email(notification)
             if sent_to:
-                notification.email_sent_at = timezone.now()
-                notification.email_recipients = sent_to
+                notification.email_recipients = list(dict.fromkeys(notification.email_recipients + sent_to))
+                if not notification.email_error:
+                    notification.email_sent_at = timezone.now()
                 notification.save(update_fields=['email_sent_at', 'email_recipients'])
                 email_count += 1
 

@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useParams, useRouter } from "next/navigation"
+import { useParams } from "next/navigation";
 import Link from "next/link"
 import {
   AlertTriangle,
@@ -19,7 +19,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { acceptInvite, validateInviteToken, type InviteValidateResponse } from "@/lib/api/users"
-import { cn } from "@/lib/utils"
 
 const GROUP_LABELS: Record<string, string> = {
   PRESIDENTE: "Presidente",
@@ -33,7 +32,7 @@ type PageState = "loading" | "valid" | "invalid" | "success"
 
 export default function ConvitePage() {
   const params = useParams()
-  const router = useRouter()
+
   const token = params.token as string
 
   const [pageState, setPageState] = useState<PageState>("loading")
@@ -134,7 +133,6 @@ export default function ConvitePage() {
             </div>
           )}
 
-
           {pageState === "invalid" && (
             <div className="flex flex-col items-center gap-5 rounded-2xl border border-border/70 bg-card p-10 shadow-premium text-center">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-500/10">
@@ -153,7 +151,6 @@ export default function ConvitePage() {
               </Button>
             </div>
           )}
-
 
           {pageState === "valid" && inviteInfo && (
             <div className="rounded-2xl border border-border/70 bg-card shadow-premium overflow-hidden">
@@ -263,7 +260,6 @@ export default function ConvitePage() {
               </form>
             </div>
           )}
-
 
           {pageState === "success" && (
             <div className="flex flex-col items-center gap-5 rounded-2xl border border-border/70 bg-card p-10 shadow-premium text-center">

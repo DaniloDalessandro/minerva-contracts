@@ -1,17 +1,4 @@
-import {
-  fetchShares,
-  createShare,
-  revokeShare,
-  fetchShareNotifications,
-  markShareNotificationRead,
-  markAllShareNotificationsRead,
-  searchUsers,
-  searchUsersByQuery,
-  searchResources,
-  type ResourceType,
-  type PermissionType,
-  type ShareCreatePayload,
-} from '@/lib/api/sharing'
+import { fetchShares, createShare, revokeShare, fetchShareNotifications, markShareNotificationRead, markAllShareNotificationsRead, searchUsers, searchUsersByQuery, searchResources, type ResourceType, type ShareCreatePayload } from '@/lib/api/sharing';
 
 export class SharingService {
   static async fetchShares(params: {

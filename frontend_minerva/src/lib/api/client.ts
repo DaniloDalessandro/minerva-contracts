@@ -30,7 +30,6 @@ function logoutFromAuthError(error: unknown) {
   notifyAuthLogout("Falha de autenticacao")
 }
 
-
 export async function apiClient(
   url: string,
   options: RequestInit = {}
@@ -71,6 +70,5 @@ export async function apiClient(
 
   return response
 }
-
 
 export { apiClient as authFetch }

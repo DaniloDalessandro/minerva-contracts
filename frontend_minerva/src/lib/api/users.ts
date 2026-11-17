@@ -5,6 +5,8 @@ export interface AdminUser {
   id: number
   email: string
   name: string
+  first_name?: string
+  last_name?: string
   groups: string[]
   is_active: boolean
   is_superuser: boolean

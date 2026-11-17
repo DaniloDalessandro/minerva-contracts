@@ -6,10 +6,34 @@ import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
-function Select({
-  ...props
-}: React.ComponentProps<typeof SelectPrimitive.Root>) {
-  return <SelectPrimitive.Root data-slot="select" {...props} />
+const SelectDismissContext = React.createContext<(() => void) | null>(null);
+
+function Select({ open, defaultOpen = false, onOpenChange, ...props }: React.ComponentProps<typeof SelectPrimitive.Root>) {
+  const [localOpen, setLocalOpen] = React.useState(defaultOpen);
+  const expandedRef = React.useRef(open ?? localOpen);
+  expandedRef.current = open ?? localOpen;
+  const changeOpen = React.useCallback((value: boolean) => {
+    expandedRef.current = value;
+    setLocalOpen(value);
+    onOpenChange?.(value);
+  }, [onOpenChange]);
+  React.useLayoutEffect(() => {
+    // Consume Escape before the enclosing Dialog's document listener. This
+    // also works when an empty Select has no focusable options.
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (!expandedRef.current || event.key !== "Escape") return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      changeOpen(false);
+    };
+    document.addEventListener("keydown", closeOnEscape, true);
+    return () => document.removeEventListener("keydown", closeOnEscape, true);
+  }, [changeOpen]);
+  return (
+    <SelectDismissContext.Provider value={() => changeOpen(false)}>
+      <SelectPrimitive.Root data-slot="select" {...props} open={open ?? localOpen} onOpenChange={changeOpen} />
+    </SelectDismissContext.Provider>
+  );
 }
 
 function SelectGroup({
@@ -54,8 +78,10 @@ function SelectContent({
   className,
   children,
   position = "popper",
+  onEscapeKeyDown,
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Content>) {
+  const dismiss = React.useContext(SelectDismissContext);
   return (
     <SelectPrimitive.Portal>
       <SelectPrimitive.Content
@@ -68,6 +94,14 @@ function SelectContent({
         )}
         position={position}
         {...props}
+        onEscapeKeyDown={(event) => {
+          onEscapeKeyDown?.(event);
+          if (!event.defaultPrevented) {
+            event.preventDefault();
+            event.stopPropagation();
+            dismiss?.();
+          }
+        }}
       >
         <SelectScrollUpButton />
         <SelectPrimitive.Viewport

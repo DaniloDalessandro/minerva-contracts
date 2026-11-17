@@ -1,3 +1,4 @@
+import { fetchAllRecords } from './collection';
 import { apiClient } from './client';
 import { API_ENDPOINTS } from '@/constants/api-endpoints';
 import type {
@@ -91,33 +92,13 @@ export async function fetchColaboradorAuxiliosAPI(colaboradorId: number): Promis
 
 
 export async function fetchDirectionsAPI(): Promise<any[]> {
-  const url = `${API_ENDPOINTS.DIRECTION.LIST}?page_size=1000&ordering=name`;
-  const response = await apiClient(url);
-  if (!response.ok) {
-    throw new Error('Falha ao buscar diretorias');
-  }
-  const data = await response.json();
-  return data.results || data;
+  return fetchAllRecords(`${API_ENDPOINTS.DIRECTION.LIST}?ordering=name`);
 }
 
 export async function fetchManagementsAPI(): Promise<any[]> {
-  const url = `${API_ENDPOINTS.MANAGEMENT.LIST}?page_size=1000&ordering=name`;
-  const response = await apiClient(url);
-  if (!response.ok) {
-    throw new Error('Falha ao buscar gerências');
-  }
-  const data = await response.json();
-  return data.results || data;
+  return fetchAllRecords(`${API_ENDPOINTS.MANAGEMENT.LIST}?ordering=name`);
 }
 
 export async function fetchCoordinationsAPI(): Promise<any[]> {
-  const url = `${API_ENDPOINTS.COORDINATION.LIST}?page_size=1000&ordering=name`;
-  const response = await apiClient(url);
-  if (!response.ok) {
-    throw new Error('Falha ao buscar coordenações');
-  }
-  const data = await response.json();
-  return data.results || data;
+  return fetchAllRecords(`${API_ENDPOINTS.COORDINATION.LIST}?ordering=name`);
 }
-
-

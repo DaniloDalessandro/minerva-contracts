@@ -8,6 +8,7 @@ from rest_framework.throttling import UserRateThrottle
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db import IntegrityError
+from django.db.models.deletion import ProtectedError
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.conf import settings
@@ -301,7 +302,13 @@ class BudgetDeleteView(generics.DestroyAPIView):
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        self.perform_destroy(instance)
+        try:
+            self.perform_destroy(instance)
+        except ProtectedError:
+            return Response(
+                {'message': 'Não é possível excluir um orçamento com linhas vinculadas. Remova os vínculos antes de excluir.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         return Response({'message': BUDGET_MSGS['success_deleted']}, status=status.HTTP_204_NO_CONTENT)
 
 

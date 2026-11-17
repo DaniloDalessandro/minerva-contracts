@@ -56,6 +56,13 @@ services:
       - LANGCHAIN_TRACING_V2=${LANGCHAIN_TRACING_V2:-false}
       - SENTRY_DSN=${SENTRY_DSN:-}
       - ALICE_CONFIDENCE_THRESHOLD=${ALICE_CONFIDENCE_THRESHOLD:-0.70}
+      - EMAIL_BACKEND=${EMAIL_BACKEND:-django.core.mail.backends.smtp.EmailBackend}
+      - EMAIL_HOST=${EMAIL_HOST:-}
+      - EMAIL_PORT=${EMAIL_PORT:-587}
+      - EMAIL_USE_TLS=${EMAIL_USE_TLS:-True}
+      - EMAIL_HOST_USER=${EMAIL_HOST_USER:-}
+      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD:-}
+      - DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL:-noreply@sistemacontratos.local}
       - FRONTEND_URL=${APP_URL:-http://localhost:4002}
       - DJANGO_SUPERUSER_EMAIL=${DJANGO_SUPERUSER_EMAIL:-}
       - DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD:-}
@@ -139,6 +146,11 @@ services:
         condition: service_healthy
       celery:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"from pathlib import Path; import os; assert b'beat' in Path('/proc/1/cmdline').read_bytes()\""]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
   frontend:
     build:

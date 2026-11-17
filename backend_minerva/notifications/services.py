@@ -39,7 +39,7 @@ def send_expiration_email(notification) -> list[str]:
 
     days_remaining = None
     if contract.expiration_date:
-        delta = contract.expiration_date - timezone.now().date()
+        delta = contract.expiration_date - timezone.localdate()
         days_remaining = delta.days
 
     subject = f"[Minerva] Contrato {contract.protocol_number} vence em {days_remaining} dias"
@@ -58,14 +58,18 @@ def send_expiration_email(notification) -> list[str]:
     sent_to = []
     errors = []
     for email in unique_recipients:
+        if email in notification.email_recipients:
+            continue
         try:
-            send_mail(
+            sent_count = send_mail(
                 subject=subject,
                 message=body,
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[email],
                 fail_silently=False,
             )
+            if not sent_count:
+                raise RuntimeError('O servidor de e-mail não confirmou o envio.')
             sent_to.append(email)
             logger.info(
                 "E-mail de vencimento enviado para %s (contrato %s).",
@@ -78,8 +82,7 @@ def send_expiration_email(notification) -> list[str]:
                 email, contract.protocol_number, exc,
             )
 
-    if errors:
-        notification.email_error = "; ".join(errors)
-        notification.save(update_fields=['email_error'])
+    notification.email_error = "; ".join(errors)
+    notification.save(update_fields=['email_error'])
 
     return sent_to

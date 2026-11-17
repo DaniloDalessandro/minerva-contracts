@@ -60,6 +60,8 @@ export default function ColaboradoresPage() {
       title="Colaboradores"
       titleIcon={<Users className="h-8 w-8" />}
       subtitle="Gerencie os colaboradores cadastrados no sistema"
+      editStorageKey="editColaboradorId"
+      fetchEditItem={ColaboradorService.fetchColaboradorById}
       FormComponent={ColaboradorForm}
       initialPageSize={15}
       initialStatusFilter="ATIVO"

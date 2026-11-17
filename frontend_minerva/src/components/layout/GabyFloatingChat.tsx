@@ -2,22 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import type React from "react"
-import {
-  AlertTriangle,
-  ChevronDown,
-  Clock3,
-  Loader2,
-  MessageSquarePlus,
-  Send,
-  Trash2,
-  X,
-} from "lucide-react"
+import { AlertTriangle, ChevronDown, Clock3, Loader2, MessageSquarePlus, Send, X } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { AliceService } from "@/services"
-import { toast } from "@/hooks/use-toast"
+
 import { useAuthContext } from "@/context/AuthContext"
 import { AvatarDisplay } from "@/components/ui/AvatarPicker"
 
@@ -35,7 +26,6 @@ function GabyAvatar({ size = 28, className }: { size?: number; className?: strin
   )
 }
 
-
 interface Message {
   id: string
   type: "user" | "assistant" | "error"
@@ -50,18 +40,10 @@ interface CachedChat {
   updatedAt: string
 }
 
-interface ConversationSession {
-  id: number
-  session_id: string
-  created_at: string
-  message_count: number
-}
-
 interface FabPos {
   side: "left" | "right"
   y: number
 }
-
 
 const CHAT_KEY = "gaby_chat_v1"
 const FAB_KEY  = "gaby_fab_pos"
@@ -73,40 +55,6 @@ const writeJson = (key: string, val: unknown) => {
   try { localStorage.setItem(key, JSON.stringify(val)) } catch {}
 }
 
-
-function GabyIcon({ size = 24, className }: { size?: number; className?: string }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-    >
-
-      <circle cx="12" cy="14" r="7.5" stroke="currentColor" strokeWidth="1.8" />
-
-      <circle cx="9.5" cy="12.5" r="1.1" fill="currentColor" />
-      <circle cx="14.5" cy="12.5" r="1.1" fill="currentColor" />
-
-      <path
-        d="M9.5 16 Q12 18.2 14.5 16"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        fill="none"
-      />
-
-      <path
-        d="M12 1.5 L12.7 4 L15.2 4.7 L12.7 5.4 L12 7.9 L11.3 5.4 L8.8 4.7 L11.3 4Z"
-        fill="currentColor"
-      />
-    </svg>
-  )
-}
-
-
 export function GabyFloatingChat() {
   const { user } = useAuthContext()
   const [isOpen,     setIsOpen]     = useState(false)
@@ -116,11 +64,6 @@ export function GabyFloatingChat() {
   const [isLoading,  setIsLoading]  = useState(false)
   const [sessionId,  setSessionId]  = useState("")
   const [awaitingClarification, setAwaitingClarification] = useState(false)
-  const [showHistory, setShowHistory] = useState(false)
-  const [sessions,   setSessions]   = useState<ConversationSession[]>([])
-  const [loadingHistory, setLoadingHistory] = useState(false)
-  const [loadingSession, setLoadingSession] = useState<number | null>(null)
-
 
   const [fabPos,    setFabPos]    = useState<FabPos>({ side: "right", y: -1 })
   const [isDragging, setIsDragging] = useState(false)
@@ -130,12 +73,10 @@ export function GabyFloatingChat() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef       = useRef<HTMLTextAreaElement>(null)
 
-
   useEffect(() => {
 
     const saved = readJson<FabPos>(FAB_KEY)
     setFabPos(saved ?? { side: "right", y: window.innerHeight - 80 })
-
 
     const cached = readJson<CachedChat>(CHAT_KEY)
     if (cached?.messages?.length) {
@@ -145,7 +86,6 @@ export function GabyFloatingChat() {
       setMessages([mkWelcome()])
     }
   }, [])
-
 
   useEffect(() => {
     if (messages.length > 1 || messages[0]?.id !== "welcome") {
@@ -157,12 +97,10 @@ export function GabyFloatingChat() {
     }
   }, [messages, sessionId])
 
-
   useEffect(() => {
     if (isOpen && !isMinimized)
       setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 80)
   }, [messages, isLoading, isOpen, isMinimized])
-
 
   useEffect(() => {
     if (isOpen && !isMinimized)
@@ -177,7 +115,6 @@ export function GabyFloatingChat() {
       timestamp: new Date(),
     }
   }
-
 
   const onPointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
     e.currentTarget.setPointerCapture(e.pointerId)
@@ -223,7 +160,6 @@ export function GabyFloatingChat() {
     }
   }
 
-
   const sendMessage = useCallback(async (text?: string) => {
     const msg = (text ?? inputValue).trim()
     if (!msg || isLoading) return
@@ -268,52 +204,8 @@ export function GabyFloatingChat() {
     try { localStorage.removeItem(CHAT_KEY) } catch {}
     setSessionId("")
     setAwaitingClarification(false)
-    setShowHistory(false)
+
     setMessages([{ id: "welcome_new", type: "assistant", content: "Nova conversa iniciada! Como posso ajudar?", timestamp: new Date() }])
-  }, [])
-
-  const loadHistory = useCallback(async () => {
-    setLoadingHistory(true)
-    try {
-      const data = await AliceService.getSessions()
-      setSessions(data.results || [])
-    } catch {
-      toast({ title: "Erro ao carregar histórico", variant: "destructive" })
-    } finally {
-      setLoadingHistory(false)
-    }
-  }, [])
-
-  const loadSession = useCallback(async (s: ConversationSession) => {
-    setLoadingSession(s.id)
-    try {
-      const detail = await AliceService.getSessionDetail(s.id)
-      const loaded: Message[] = detail.messages?.map((m: any, i: number) => ({
-        id: `${s.id}_${i}`,
-        type: m.role === "user" ? "user" : "assistant",
-        content: m.content,
-        timestamp: new Date(m.timestamp || detail.created_at),
-      })) || []
-      setMessages(loaded)
-      setSessionId(s.session_id)
-      setShowHistory(false)
-      toast({ title: "Conversa carregada", description: `${loaded.length} mensagens` })
-    } catch {
-      toast({ title: "Erro ao carregar conversa", variant: "destructive" })
-    } finally {
-      setLoadingSession(null)
-    }
-  }, [])
-
-  const deleteSession = useCallback(async (e: React.MouseEvent, s: ConversationSession) => {
-    e.stopPropagation()
-    try {
-      await AliceService.clearSession(s.id)
-      setSessions((p) => p.filter((x) => x.id !== s.id))
-      toast({ title: "Conversa excluída" })
-    } catch {
-      toast({ title: "Erro ao excluir", variant: "destructive" })
-    }
   }, [])
 
   const handleKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -326,12 +218,10 @@ export function GabyFloatingChat() {
     ? awaitingClarification ? "Aguardando contexto" : "Pensando..."
     : awaitingClarification ? "Aguardando resposta" : "Online"
 
-
   const panelStyle: React.CSSProperties =
     fabPos.side === "right"
       ? { right: "20px" }
       : { left: "20px" }
-
 
   const fabStyle: React.CSSProperties = {
     position: "fixed",
@@ -385,39 +275,6 @@ export function GabyFloatingChat() {
             </div>
           </div>
 
-
-          {showHistory && (
-            <div className="shrink-0 border-b border-border/60 bg-background/95 max-h-52 overflow-y-auto">
-              <div className="px-3 py-2.5">
-                <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Conversas salvas</p>
-                {loadingHistory ? (
-                  <div className="flex justify-center py-4"><Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /></div>
-                ) : sessions.length === 0 ? (
-                  <p className="text-xs text-muted-foreground text-center py-3">Nenhuma conversa encontrada</p>
-                ) : (
-                  <div className="space-y-1">
-                    {sessions.map((s) => (
-                      <button key={s.id} onClick={() => loadSession(s)} disabled={loadingSession === s.id} className="w-full text-left px-2.5 py-2 rounded-lg hover:bg-accent transition-colors flex items-center gap-2 group">
-                        {loadingSession === s.id
-                          ? <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-muted-foreground" />
-                          : <div className="h-6 w-6 rounded-md bg-primary/8 flex items-center justify-center shrink-0"><GabyIcon size={14} className="text-primary" /></div>
-                        }
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium truncate">Conversa #{s.id}</p>
-                          <p className="text-[10px] text-muted-foreground">{s.message_count} msg · {new Date(s.created_at).toLocaleDateString("pt-BR")}</p>
-                        </div>
-                        <button onClick={(e) => deleteSession(e, s)} className="h-5 w-5 rounded flex items-center justify-center text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive transition-all">
-                          <Trash2 className="h-3 w-3" />
-                        </button>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-
           <ScrollArea className="flex-1 min-h-0 bg-background/50">
             <div className="pointer-events-none absolute inset-0 grid-bg opacity-40" />
             <div className="relative px-3 py-3 space-y-3">
@@ -470,7 +327,6 @@ export function GabyFloatingChat() {
             </div>
           </ScrollArea>
 
-
           <div className="shrink-0 border-t border-border/60 bg-card/95 px-3 py-2.5">
             {awaitingClarification && (
               <div className="mb-2 flex items-center gap-1.5 rounded-lg border border-amber-500/20 bg-amber-500/8 px-2.5 py-1.5 text-xs text-amber-700 dark:text-amber-200">
@@ -507,7 +363,6 @@ export function GabyFloatingChat() {
         </div>
       )}
 
-
       {isOpen && isMinimized && (
         <div
           className="fixed z-50 animate-fade-in"
@@ -523,7 +378,6 @@ export function GabyFloatingChat() {
           </button>
         </div>
       )}
-
 
       <button
         onPointerDown={onPointerDown}

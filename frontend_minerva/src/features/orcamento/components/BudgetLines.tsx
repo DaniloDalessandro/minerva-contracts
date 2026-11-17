@@ -1,28 +1,12 @@
 "use client"
 
-import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import {
-  ListIcon,
-  DollarSignIcon,
-  TrendingUpIcon,
-  ClipboardListIcon,
-  HistoryIcon,
-  UserIcon,
-  TagIcon,
-  CheckCircle2Icon,
-  AlertCircleIcon,
-  ChevronRightIcon,
-  PlusIcon,
-  Pencil,
-  Trash2
-} from "lucide-react"
+import { ListIcon, DollarSignIcon, TrendingUpIcon, ClipboardListIcon, PlusIcon, Pencil, Trash2 } from "lucide-react";
 import { BudgetLineListItem, BudgetLinesSummary } from "@/lib/api/budgets"
-import BudgetLineVersionHistory from "./BudgetLineVersionHistory"
 
 interface BudgetLinesProps {
   budgetLines: BudgetLineListItem[]
@@ -30,17 +14,9 @@ interface BudgetLinesProps {
   onCreateNewBudgetLine?: () => void
   onEditBudgetLine?: (budgetLineId: number) => void
   onDeleteBudgetLine?: (budgetLineId: number) => void
-  budgetInfo?: {
-    name: string
-    year: number
-    category: string
-    totalAmount: string
-  }
 }
 
-export function BudgetLines({ budgetLines, budgetLinesSummary, onCreateNewBudgetLine, onEditBudgetLine, onDeleteBudgetLine, budgetInfo }: BudgetLinesProps) {
-  const [selectedLineId, setSelectedLineId] = useState<number | null>(null)
-  const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false)
+export function BudgetLines({ budgetLines, budgetLinesSummary, onCreateNewBudgetLine, onEditBudgetLine, onDeleteBudgetLine }: BudgetLinesProps) {
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -48,45 +24,6 @@ export function BudgetLines({ budgetLines, budgetLinesSummary, onCreateNewBudget
       currency: 'BRL'
     }).format(amount)
   }
-
-  const getStatusColor = (status: string, type: 'contract' | 'process') => {
-    const statusColors: { [key: string]: string } = {
-
-      'DENTRO DO PRAZO': 'bg-green-100 text-green-800 border-green-200',
-      'CONTRATADO NO PRAZO': 'bg-green-100 text-green-800 border-green-200',
-      'CONTRATADO COM ATRASO': 'bg-yellow-100 text-yellow-800 border-yellow-200',
-      'PRAZO VENCIDO': 'bg-red-100 text-red-800 border-red-200',
-      'VENCIDO': 'bg-red-100 text-red-800 border-red-200',
-
-      'ELABORADO NO PRAZO': 'bg-green-100 text-green-800 border-green-200',
-      'ELABORADO COM ATRASO': 'bg-yellow-100 text-yellow-800 border-yellow-200',
-      'EM ELABORAÇÃO': 'bg-primary/10 text-primary border-primary/30',
-      'PENDENTE': 'bg-orange-100 text-orange-800 border-orange-200',
-    }
-    return statusColors[status] || 'bg-muted text-muted-foreground border-border'
-  }
-
-  const getExpenseTypeColor = (expenseType: string) => {
-    const typeColors: { [key: string]: string } = {
-      'Base Principal': 'bg-primary/10 text-primary border-primary/30',
-      'Base Suplementar': 'bg-indigo-100 text-indigo-700 border-indigo-200',
-      'Reserva Técnica': 'bg-orange-100 text-orange-800 border-orange-200',
-      'Contingência': 'bg-red-100 text-red-800 border-red-200',
-    }
-    return typeColors[expenseType] || 'bg-muted text-muted-foreground border-border'
-  }
-
-  const handleViewHistory = (lineId: number) => {
-    setSelectedLineId(lineId)
-    setIsHistoryDialogOpen(true)
-  }
-
-  const handleCloseHistoryDialog = () => {
-    setIsHistoryDialogOpen(false)
-    setSelectedLineId(null)
-  }
-
-
 
   const summaryCards = [
     {
@@ -142,7 +79,6 @@ export function BudgetLines({ budgetLines, budgetLinesSummary, onCreateNewBudget
             </Card>
           ))}
         </div>
-
 
         <div className="space-y-3">
           <h3 className="text-lg font-semibold text-foreground">Lista de Linhas Orçamentárias</h3>
@@ -220,22 +156,6 @@ export function BudgetLines({ budgetLines, budgetLinesSummary, onCreateNewBudget
 
       </CardContent>
 
-
-      <Dialog open={isHistoryDialogOpen} onOpenChange={setIsHistoryDialogOpen}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden">
-          <DialogHeader>
-            <DialogTitle>Histórico de Versões da Linha Orçamentária</DialogTitle>
-          </DialogHeader>
-          <div className="overflow-auto">
-            {selectedLineId && (
-              <BudgetLineVersionHistory
-                budgetLineId={selectedLineId}
-                isOpen={isHistoryDialogOpen}
-              />
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
     </Card>
   )
 }

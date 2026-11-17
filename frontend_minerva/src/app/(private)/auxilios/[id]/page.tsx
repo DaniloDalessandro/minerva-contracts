@@ -1,9 +1,12 @@
 "use client"
 
+import { parseDisplayDate } from "@/lib/date";
+
 import React, { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { type Auxilio } from "@/features/auxilios"
 import { AuxilioService } from "@/services"
+import { usePermissions } from "@/hooks/usePermissions";
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
@@ -19,10 +22,10 @@ const fmtCurrency = (v: string | number) =>
   )
 
 const fmtDate = (d?: string | null) =>
-  d ? new Date(d).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" }) : "—"
+  d ? parseDisplayDate(d).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" }) : "—"
 
 const fmtDateTime = (d: string) =>
-  new Date(d)
+  parseDisplayDate(d)
     .toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })
     .replace(",", "")
 
@@ -41,6 +44,8 @@ const STATUS_LABELS: Record<string, string> = {
 }
 
 export default function AuxilioDetailsPage() {
+  const { canManageAuxilios } = usePermissions()
+
   const params = useParams()
   const router = useRouter()
   const id = params?.id as string
@@ -77,7 +82,7 @@ export default function AuxilioDetailsPage() {
     )
   }
 
-  const expDate  = auxilio.end_date ? new Date(auxilio.end_date) : null
+  const expDate  = auxilio.end_date ? parseDisplayDate(auxilio.end_date) : null
   const daysDiff = expDate ? Math.ceil((expDate.getTime() - Date.now()) / 86400000) : null
   const isExpired  = daysDiff !== null && daysDiff < 0
   const isExpiring = daysDiff !== null && daysDiff >= 0 && daysDiff <= 30
@@ -119,13 +124,13 @@ export default function AuxilioDetailsPage() {
               <Printer className="h-4 w-4" />
               Gerar PDF
             </Button>
-            <Button
+            {canManageAuxilios && (<Button
               onClick={() => { window.sessionStorage.setItem("editAuxilioId", id); router.push("/auxilios") }}
               className="flex items-center gap-2"
             >
               <Edit className="h-4 w-4" />
               Editar
-            </Button>
+            </Button>)}
           </div>
         </div>
 

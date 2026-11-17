@@ -16,7 +16,7 @@ export const API_ENDPOINTS = {
     TOGGLE_STATUS: (id: number) => `${API_BASE}/api/v1/employee/${id}/toggle-status/`,
     CONTRACTS: `${API_BASE}/api/v1/employee/contracts/`,
     AIDS: `${API_BASE}/api/v1/employee/aids/`,
-    ALL_EMPLOYEES: `${API_BASE}/api/v1/employee/employees/`,
+    ALL_EMPLOYEES: `${API_BASE}/api/v1/employee/`,
   },
 
 
@@ -53,7 +53,7 @@ export const API_ENDPOINTS = {
     BY_ID: (id: number) => `${API_BASE}/api/v1/budgetline/budgetslines/${id}/`,
     UPDATE: (id: number) => `${API_BASE}/api/v1/budgetline/budgetslines/${id}/update/`,
     DELETE: (id: number) => `${API_BASE}/api/v1/budgetline/budgetslines/${id}/delete/`,
-    ALL: `${API_BASE}/api/v1/budgetline/budgetlines/`,
+    ALL: `${API_BASE}/api/v1/budgetline/budgetslines/`,
   },
 
 

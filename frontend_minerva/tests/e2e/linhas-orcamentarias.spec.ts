@@ -44,10 +44,10 @@ test.describe("Linhas Orçamentárias — Modal", () => {
   test("modal exibe seções do formulário", async ({ page }) => {
     await openModal(page);
     await expect(page.getByText("Dados Básicos")).toBeVisible();
-    await expect(page.getByText("Centros")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Centros", exact: true })).toBeVisible();
     await expect(page.getByText(/informações de contrato/i)).toBeVisible();
     await expect(page.getByText("Fiscais")).toBeVisible();
-    await expect(page.getByText("Status")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Status", exact: true })).toBeVisible();
   });
 
   test("fecha o modal com botão Cancelar", async ({ page }) => {

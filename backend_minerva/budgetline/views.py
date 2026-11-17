@@ -33,6 +33,10 @@ class BudgetLineListAPIView(generics.ListAPIView):
     queryset = BudgetLine.objects.select_related(*_BUDGETLINE_SELECT)
     serializer_class = BudgetLineSerializer
     permission_classes = [IsAuthenticated]
+    search_fields = ['summary_description', 'object', 'management_center__name', 'requesting_center__name', 'main_fiscal__full_name']
+    ordering_fields = ['id', 'summary_description', 'budgeted_amount', 'created_at', 'updated_at', 'category', 'status']
+    filterset_fields = ['budget', 'management_center', 'requesting_center', 'status', 'category']
+    ordering = ['-created_at']
 
 
 @extend_schema(tags=['Linhas Orçamentárias'])
